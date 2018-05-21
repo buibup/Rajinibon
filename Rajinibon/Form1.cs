@@ -1,4 +1,5 @@
-﻿using Rajinibon.Services;
+﻿using Rajinibon.Common;
+using Rajinibon.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -49,7 +50,7 @@ namespace Rajinibon
             var _startTime = startTime;
             var _endTime = endTime;
             DateTime current = DateTime.Now;
-            TimeSpan timeToGo = _startTime - current.TimeOfDay;
+            TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
             if (timeToGo < TimeSpan.Zero)
             {
                 return;//time already passed
