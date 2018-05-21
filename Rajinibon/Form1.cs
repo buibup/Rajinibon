@@ -24,19 +24,23 @@ namespace Rajinibon
             InitializeComponent();
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            var timeStartConfig = GlobalConfig.AppSettings("startTime").Split(':');
-            var timeEndConfig = GlobalConfig.AppSettings("endTime").Split(':');
-
-            var startTime = new TimeSpan(int.Parse(timeStartConfig[0]), int.Parse(timeStartConfig[1]), int.Parse(timeStartConfig[2]));
-            var endTime = new TimeSpan(int.Parse(timeEndConfig[0]), int.Parse(timeEndConfig[1]), int.Parse(timeEndConfig[2]));
-
-            await Task.Run(() => 
+            try
             {
-                SetUpTimer(startTime, endTime);
+                var timeStartConfig = GlobalConfig.AppSettings("startTime").Split(':');
+                var timeEndConfig = GlobalConfig.AppSettings("endTime").Split(':');
 
-            });
+                var startTime = new TimeSpan(int.Parse(timeStartConfig[0]), int.Parse(timeStartConfig[1]), int.Parse(timeStartConfig[2]));
+                var endTime = new TimeSpan(int.Parse(timeEndConfig[0]), int.Parse(timeEndConfig[1]), int.Parse(timeEndConfig[2]));
+
+                SetUpTimer(startTime, endTime);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            
         }
 
         private System.Threading.Timer timer;
