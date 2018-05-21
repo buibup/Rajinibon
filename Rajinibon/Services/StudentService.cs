@@ -30,7 +30,7 @@ namespace Rajinibon.Services
 
             var results = studentsEntryDbf.Where(s => !studentsEntryDb.Any(s2 => s2.EmpId == s.EmpId));
 
-            return results.StudentCheckTimesFirstEntry();
+            return results.StudentCheckTimesFirstTime();
         }
 
         public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesExit(string date)
@@ -44,7 +44,7 @@ namespace Rajinibon.Services
 
             var result = studentsExitDbf.Where(s => !studentsExitDb.Any(s2 => s2.EmpId == s.EmpId));
 
-            return result;
+            return result.StudentCheckTimesFirstTime();
         }
 
         public Task RemoveStudentPass()

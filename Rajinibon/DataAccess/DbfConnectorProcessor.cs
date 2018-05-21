@@ -9,7 +9,7 @@ namespace Rajinibon.DataAccess
 {
     public static class DbfConnectorProcessor
     {
-        public static List<StudentCheckTime> StudentCheckTimesFirstEntry(this IEnumerable<StudentCheckTime> models)
+        public static List<StudentCheckTime> StudentCheckTimesFirstTime(this IEnumerable<StudentCheckTime> models)
         {
             var results = new List<StudentCheckTime>();
 
