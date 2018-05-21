@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rajinibon.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace Rajinibon.DataAccess
 {
     interface IMySqlDataConnection
     {
-        
+        Task SaveStudentCheckTimes(IEnumerable<StudentCheckTime> models);
+        Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(string date, TimeSpan timeStart, TimeSpan timeEnd);
     }
 }

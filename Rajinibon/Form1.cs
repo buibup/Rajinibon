@@ -13,8 +13,8 @@ namespace Rajinibon
 {
     public partial class Form1 : Form
     {
-        IStudentService StudentService { get; set;
-        }
+        IStudentService StudentService { get; set; }
+
         public Form1()
         {
             StudentService = new StudentService();
@@ -24,7 +24,21 @@ namespace Rajinibon
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            var data = await StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
+
+            var studentsEntry = await StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
+
+            var studentsExit = await StudentService.GetStudentCheckTimesExit(GlobalConfig.Date);
+
+            if(studentsEntry.ToList().Count > 0)
+            {
+                await StudentService.SaveStudentStudentCheckTime(studentsEntry);
+            }
+            
+            if(studentsExit.ToList().Count > 0)
+            {
+                await StudentService.SaveStudentStudentCheckTime(studentsExit);
+            }
+
         }
     }
 }

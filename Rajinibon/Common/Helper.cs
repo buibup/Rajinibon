@@ -22,6 +22,18 @@ namespace Rajinibon.Common
             }
         }
 
+        public static string GetDate(this string date)
+        {
+            if (date.ToLower() == "current")
+            {
+                return $"{DateTime.Now.ToString("yyyyMMdd")}";
+            }
+            else
+            {
+                return $"{date}";
+            }
+        }
+
         public static bool IsBetween<T>(this T item, T start, T end)
         {
             return Comparer<T>.Default.Compare(item, start) >= 0

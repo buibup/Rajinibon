@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +10,7 @@ namespace Rajinibon.Models
 {
     public class StudentCheckTime
     {
+        [Key]
         public int Id { get; set; }
         public decimal? CuserId { get; set; }
         public string EmpId { get; set; }

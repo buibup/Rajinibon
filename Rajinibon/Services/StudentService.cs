@@ -12,42 +12,39 @@ namespace Rajinibon.Services
     public class StudentService : IStudentService
     {
         IDbfDataConnection DbfDataConnection { get; set; }
+        IMySqlDataConnection MySqlDataConnection { get; set; }
 
         public StudentService()
         {
             DbfDataConnection = new DbfConnector();
+            MySqlDataConnection = new MySqlConnectors();
         }
         public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesEntry(string date)
         {
-            var result = new List<StudentCheckTime>();
             var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
             var timeStart = new TimeSpan(5, 0, 0);
             var timeEnd = new TimeSpan(12, 0, 0);
 
-            foreach(var item in data)
-            {
-                var chkTime = item.ChkTime;
-                var time = new TimeSpan(chkTime.Hour, chkTime.Minute, chkTime.Millisecond);
+            var studentsEntryDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
+            var studentsEntryDb = await MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
 
-                if (time.IsBetween(timeStart, timeEnd))
-                {
-                    var model = new StudentCheckTime()
-                    {
-                        CuserId = item.CuserId,
-                        EmpId = item.EmpId,
-                        EmpName = item.EmpName,
-                        ChkTime = chkTime
-                    };
-                    result.Add(model);
-                }
-            }
+            var results = studentsEntryDbf.Where(s => !studentsEntryDb.Any(s2 => s2.EmpId == s.EmpId));
 
-            return result.StudentCheckTimesFirstEntry();
+            return results.StudentCheckTimesFirstEntry();
         }
 
-        public Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesExit(string date)
+        public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesExit(string date)
         {
-            throw new NotImplementedException();
+            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
+            var timeStart = new TimeSpan(15, 0, 0);
+            var timeEnd = new TimeSpan(18, 30, 0);
+
+            var studentsExitDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
+            var studentsExitDb = await MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
+
+            var result = studentsExitDbf.Where(s => !studentsExitDb.Any(s2 => s2.EmpId == s.EmpId));
+
+            return result;
         }
 
         public Task RemoveStudentPass()
@@ -55,19 +52,43 @@ namespace Rajinibon.Services
             throw new NotImplementedException();
         }
 
-        public Task SaveStudentEntry(IEnumerable<StudentCheckTime> models)
+        public async Task SaveStudentStudentCheckTime(IEnumerable<StudentCheckTime> models)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task SaveStudentExit(IEnumerable<StudentCheckTime> models)
-        {
-            throw new NotImplementedException();
+            await MySqlDataConnection.SaveStudentCheckTimes(models);
         }
 
         public Task SaveStudentSentMessage(IEnumerable<StudentCheckTime> models)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(IEnumerable<StudentCheckTime> models, TimeSpan timeStart, TimeSpan timeEnd)
+        {
+            var result = new List<StudentCheckTime>();
+
+            await Task.Run(() => 
+            {
+                foreach (var item in models)
+                {
+                    var chkTime = item.ChkTime;
+                    var time = new TimeSpan(chkTime.Hour, chkTime.Minute, chkTime.Millisecond);
+
+                    if (time.IsBetween(timeStart, timeEnd))
+                    {
+                        var model = new StudentCheckTime()
+                        {
+                            CuserId = item.CuserId,
+                            EmpId = item.EmpId,
+                            EmpName = item.EmpName,
+                            ChkTime = chkTime
+                        };
+                        result.Add(model);
+                    }
+                }
+            });
+
+
+            return result;
         }
     }
 }

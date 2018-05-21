@@ -11,8 +11,8 @@ namespace Rajinibon.Services
     {
         Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesEntry(string date);
         Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesExit(string date);
-        Task SaveStudentEntry(IEnumerable<StudentCheckTime> models);
-        Task SaveStudentExit(IEnumerable<StudentCheckTime> models);
+        Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(IEnumerable<StudentCheckTime> models, TimeSpan timeStart, TimeSpan timeEnd);
+        Task SaveStudentStudentCheckTime(IEnumerable<StudentCheckTime> models);
         Task SaveStudentSentMessage(IEnumerable<StudentCheckTime> models);
         Task RemoveStudentPass();
     }
