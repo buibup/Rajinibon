@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Rajinibon.Common;
 using Rajinibon.DataAccess;
 using Rajinibon.Models;
+using RestSharp;
 
 namespace Rajinibon.Services
 {
@@ -89,6 +90,30 @@ namespace Rajinibon.Services
 
 
             return result;
+        }
+
+        public async Task SentStudentNotifyMessage(IEnumerable<StudentCheckTime> models)
+        {
+            var url = GlobalConfig.AppSettings("sentMessageService")
+                .Replace("{schoolCode}", GlobalConfig.AppSettings("schoolCode"))
+                .Replace("{roleCode}", GlobalConfig.AppSettings("roleCode"));
+
+            var client = new RestClient(url);
+            var request = new RestRequest(Method.POST);
+            request.AddBody("content-type", "application/form-data");
+
+            request.AddParameter("students", "999902");
+            request.AddParameter("message", "test");
+            request.AddParameter("rooms", "");
+            request.AddParameter("username", "0411");
+
+            await Task.Run(() =>
+             {
+                 client.ExecuteAsync(request, response =>
+                 {
+                     var data = response.Content;
+                 });
+             });
         }
     }
 }

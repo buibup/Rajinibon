@@ -67,7 +67,7 @@ namespace Rajinibon
                 }
 
                 s.Stop();
-                MessageBox.Show("Compleated");
+                MessageBox.Show("Task Completed.");
             }, null, timeToGo, Timeout.InfiniteTimeSpan);
             
         }
@@ -81,11 +81,13 @@ namespace Rajinibon
             if (studentsEntry.ToList().Count > 0)
             {
                 await StudentService.SaveStudentStudentCheckTime(studentsEntry);
+                await StudentService.SentStudentNotifyMessage(studentsEntry);
             }
 
             if (studentsExit.ToList().Count > 0)
             {
                 await StudentService.SaveStudentStudentCheckTime(studentsExit);
+                await StudentService.SentStudentNotifyMessage(studentsExit);
             }
         }
     }
