@@ -17,5 +17,14 @@ namespace Rajinibon.DataAccess
 
             return results;
         }
+
+        public static List<StudentSentMessage> StudentStudentSentMessageFirstTime(this IEnumerable<StudentSentMessage> models)
+        {
+            var results = new List<StudentSentMessage>();
+
+            results = models.GroupBy(x => x.EmpId).Select(y => y.FirstOrDefault()).ToList();
+
+            return results;
+        }
     }
 }

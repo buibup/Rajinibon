@@ -76,23 +76,24 @@ namespace Rajinibon
         {
             try
             {
-                var studentsEntrySentMsg = await StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
-                var studentsExitSentMsg = await StudentService.GetStudentCheckTimesExit(GlobalConfig.Date);
+                var studentsEntry = await StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
 
-                if (studentsEntrySentMsg.ToList().Count > 0)
+                var studentsExit = await StudentService.GetStudentCheckTimesExit(GlobalConfig.Date);
+
+                if (studentsEntry.ToList().Count > 0)
                 {
-                    await StudentService.SentStudentNotifyMessage(studentsEntrySentMsg, SentType.Entry);
+                    await StudentService.SaveStudentStudentCheckTime(studentsEntry);
+                    await StudentService.SentStudentNotifyMessage(studentsEntry, SentType.Entry);
                 }
 
-                if (studentsExitSentMsg.ToList().Count > 0)
+                if (studentsExit.ToList().Count > 0)
                 {
-                    await StudentService.SentStudentNotifyMessage(studentsExitSentMsg, SentType.Exit);
+                    await StudentService.SaveStudentStudentCheckTime(studentsExit);
+                    await StudentService.SentStudentNotifyMessage(studentsExit, SentType.Exit);
                 }
             }
             catch (Exception ex)
             {
-
-                throw;
             }
             
         }
