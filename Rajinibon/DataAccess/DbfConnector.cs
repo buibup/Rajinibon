@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,23 +17,26 @@ namespace Rajinibon.DataAccess
             var results = new List<StudentCheckTime>();
             var fullPath = rootPath.GetFullPath(date);
 
-            using (var table = Table.Open(fullPath))
+            if (File.Exists(fullPath))
             {
-                var reader = table.OpenReader(Encoding.GetEncoding(874));
-                while (await reader.ReadAsync())
+                using (var table = Table.Open(fullPath))
                 {
-                    decimal? cuserid = reader.GetDecimal("CUSERID") == null? 0 : reader.GetDecimal("CUSERID");
-                    DateTime? chkTime = reader.GetDateTime("CHKTIME");
-
-                    var model = new StudentCheckTime()
+                    var reader = table.OpenReader(Encoding.GetEncoding(874));
+                    while (await reader.ReadAsync())
                     {
-                        CuserId = cuserid,
-                        EmpId = reader.GetString("EMPID"),
-                        EmpName = reader.GetString("EMPNAME"),
-                        ChkTime = (DateTime)chkTime
-                    };
+                        decimal? cuserid = reader.GetDecimal("CUSERID") == null ? 0 : reader.GetDecimal("CUSERID");
+                        DateTime? chkTime = reader.GetDateTime("CHKTIME");
 
-                    results.Add(model);
+                        var model = new StudentCheckTime()
+                        {
+                            CuserId = cuserid,
+                            EmpId = reader.GetString("EMPID"),
+                            EmpName = reader.GetString("EMPNAME"),
+                            ChkTime = (DateTime)chkTime
+                        };
+
+                        results.Add(model);
+                    }
                 }
             }
 

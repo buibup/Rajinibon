@@ -16,5 +16,7 @@ namespace Rajinibon.Models
         public string EmpId { get; set; }
         public string EmpName { get; set; }
         public DateTime ChkTime { get; set; }
+
+        public virtual StudentSentMessage StudentSentMessage { get; set; }
     }
 }

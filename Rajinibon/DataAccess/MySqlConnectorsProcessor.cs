@@ -35,5 +35,31 @@ namespace Rajinibon.DataAccess
 
             return results;
         }
+
+        public static List<StudentSentMessage> GetStudentSentMessage(this List<StudentSentMessage> models, TimeSpan timeStart, TimeSpan timeEnd)
+        {
+            var results = new List<StudentSentMessage>();
+
+            foreach (var item in models)
+            {
+                var sentTime = item.SentTime;
+                var time = new TimeSpan(sentTime.Hour, sentTime.Minute, sentTime.Millisecond);
+
+                if (time.IsBetween(timeStart, timeEnd))
+                {
+                    var model = new StudentSentMessage()
+                    {
+                        Status = item.Status,
+                        SentType = item.SentType,
+                        SentTime = item.SentTime,
+
+                    };
+
+                    results.Add(model);
+                }
+            }
+
+            return results;
+        }
     }
 }

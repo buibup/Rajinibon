@@ -25,5 +25,24 @@ namespace Rajinibon.Common
                 VALUES(?CuserId, ?EmpId, ?EmpName, ?ChkTime);
             ";
         }
+
+        public static string GetStudentSentMessagesByDate()
+        {
+            return @"
+                SELECT id Id, student_check_time_id StudentCheckTimeId, emp_id EmpId, sent_type SentType, status Status, sent_time SentTime, 
+                status Status, sent_time SentTime
+                FROM students_sent_message
+                where date(sent_time) = ?
+            ";
+        }
+
+        public static string SaveStudentSentMessages()
+        {
+            return @"
+                INSERT INTO students_sent_message
+                (student_check_time_id, emp_id, sent_type, status, sent_time)
+                VALUES(?StudentCheckTimeId, ?EmpId, ?SentType, ?Status, ?SentTime);
+            ";
+        }
     }
 }

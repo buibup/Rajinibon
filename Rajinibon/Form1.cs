@@ -29,8 +29,8 @@ namespace Rajinibon
         {
             try
             {
-                var timeStartConfig = GlobalConfig.AppSettings("startTime").Split(':');
-                var timeEndConfig = GlobalConfig.AppSettings("endTime").Split(':');
+                var timeStartConfig = GlobalConfig.AppSettings("taskStartTime").Split(':');
+                var timeEndConfig = GlobalConfig.AppSettings("taskEndTime").Split(':');
 
                 var startTime = new TimeSpan(int.Parse(timeStartConfig[0]), int.Parse(timeStartConfig[1]), int.Parse(timeStartConfig[2]));
                 var endTime = new TimeSpan(int.Parse(timeEndConfig[0]), int.Parse(timeEndConfig[1]), int.Parse(timeEndConfig[2]));
@@ -74,21 +74,27 @@ namespace Rajinibon
 
         private async void RunsAt()
         {
-            var studentsEntry = await StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
-
-            var studentsExit = await StudentService.GetStudentCheckTimesExit(GlobalConfig.Date);
-
-            if (studentsEntry.ToList().Count > 0)
+            try
             {
-                await StudentService.SaveStudentStudentCheckTime(studentsEntry);
-                await StudentService.SentStudentNotifyMessage(studentsEntry);
-            }
+                var studentsEntrySentMsg = await StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
+                var studentsExitSentMsg = await StudentService.GetStudentCheckTimesExit(GlobalConfig.Date);
 
-            if (studentsExit.ToList().Count > 0)
-            {
-                await StudentService.SaveStudentStudentCheckTime(studentsExit);
-                await StudentService.SentStudentNotifyMessage(studentsExit);
+                if (studentsEntrySentMsg.ToList().Count > 0)
+                {
+                    await StudentService.SentStudentNotifyMessage(studentsEntrySentMsg, SentType.Entry);
+                }
+
+                if (studentsExitSentMsg.ToList().Count > 0)
+                {
+                    await StudentService.SentStudentNotifyMessage(studentsExitSentMsg, SentType.Exit);
+                }
             }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+            
         }
     }
 }

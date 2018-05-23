@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,9 +13,10 @@ namespace Rajinibon.Common
     {
         public static string GetFullPath(this string rootPath, string date)
         {
+
             if (date.ToLower() == "current")
             {
-                return $"{rootPath}{GlobalConfig.PreName}{DateTime.Now.ToString("yyyyMMdd")}.dbf";
+                return $"{rootPath}{GlobalConfig.PreName}{GetDateNowStringUs("yyyyMMdd")}.dbf";
             }
             else
             {
@@ -26,7 +28,7 @@ namespace Rajinibon.Common
         {
             if (date.ToLower() == "current")
             {
-                return $"{DateTime.Now.ToString("yyyyMMdd")}";
+                return $"{GetDateNowStringUs("yyyyMMdd")}";
             }
             else
             {
@@ -34,6 +36,17 @@ namespace Rajinibon.Common
             }
         }
 
+        public static string GetDateNowStringUs(this string format)
+        {
+            CultureInfo UsaCulture = new CultureInfo("en-US");
+
+            DateTime DtNow = new DateTime();
+            DtNow = DateTime.Now;
+
+            return DtNow.ToString(format, UsaCulture);
+        }
+
+        
         public static bool IsBetween<T>(this T item, T start, T end)
         {
             return Comparer<T>.Default.Compare(item, start) >= 0
