@@ -164,7 +164,7 @@ namespace Rajinibon.Services
                                         EmpId = item.EmpId,
                                         Status = $"{SentStatus.Success}",
                                         SentType = sentType.ToString(),
-                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyyMMdd HH:mm"))
+                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
                                     };
                                     results.Add(model);
                                 }
@@ -177,7 +177,7 @@ namespace Rajinibon.Services
 
                                         Status = $"{SentStatus.Error} : {res.error}",
                                         SentType = sentType.ToString(),
-                                        SentTime = DateTime.Now
+                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
                                     };
                                     results.Add(model);
                                 }
