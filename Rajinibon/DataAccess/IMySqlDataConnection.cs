@@ -13,5 +13,6 @@ namespace Rajinibon.DataAccess
         Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(string date, TimeSpan timeStart, TimeSpan timeEnd);
         Task SaveStudentSentMessage(IEnumerable<StudentSentMessage> models);
         Task<IEnumerable<StudentSentMessage>> GetStudentSentMessages(string date, TimeSpan timeStart, TimeSpan timeEnd);
+        Task SaveExceptionLog(Exception ex);
     }
 }

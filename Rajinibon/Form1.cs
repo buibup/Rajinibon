@@ -1,4 +1,5 @@
 ﻿using Rajinibon.Common;
+using Rajinibon.Models;
 using Rajinibon.Services;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace Rajinibon
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                StudentService.SaveExceptionLog(ex);
             }
             
         }
@@ -47,53 +48,77 @@ namespace Rajinibon
         private System.Threading.Timer timer;
         private void SetUpTimer(TimeSpan startTime, TimeSpan endTime)
         {
-            var _startTime = startTime;
-            var _endTime = endTime;
-            DateTime current = DateTime.Now;
-            TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
-            if (timeToGo < TimeSpan.Zero)
+            try
             {
-                return;//time already passed
-            }
-            timer = new System.Threading.Timer(x =>
-            {
-                Stopwatch s = new Stopwatch();
-                s.Start();
-
-                while (_startTime + s.Elapsed <= _endTime)
+                var _startTime = startTime;
+                var _endTime = endTime;
+                DateTime current = DateTime.Now;
+                TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
+                if (timeToGo < TimeSpan.Zero)
                 {
-                    RunsAt();
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    return;//time already passed
                 }
+                timer = new System.Threading.Timer(x =>
+                {
+                    Stopwatch s = new Stopwatch();
+                    s.Start();
 
-                s.Stop();
-                MessageBox.Show("Task Completed.");
-            }, null, timeToGo, Timeout.InfiniteTimeSpan);
-            
+                    while (_startTime + s.Elapsed <= _endTime)
+                    {
+                        RunsAt();
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
+
+                    s.Stop();
+                    MessageBox.Show("Task Completed.");
+                }, null, timeToGo, Timeout.InfiniteTimeSpan);
+            }
+            catch (Exception ex)
+            {
+                StudentService.SaveExceptionLog(ex);
+            }
         }
 
         private async void RunsAt()
         {
             try
             {
-                var studentsEntry = await StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
+                var studentsEntry = StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date).Result.ToList();
 
-                var studentsExit = await StudentService.GetStudentCheckTimesExit(GlobalConfig.Date);
+                var studentsExit = StudentService.GetStudentCheckTimesExit(GlobalConfig.Date).Result.ToList();
 
                 if (studentsEntry.ToList().Count > 0)
                 {
-                    await StudentService.SaveStudentStudentCheckTime(studentsEntry);
-                    await StudentService.SentStudentNotifyMessage(studentsEntry, SentType.Entry);
+                    await Task.Run(() => 
+                    {
+                        StudentService.SaveStudentStudentCheckTime(studentsEntry);
+                    });
+
+                    await Task.Run(() =>
+                    {
+                        StudentService.SentStudentNotifyMessage(studentsEntry, SentType.Entry);
+
+                    });
                 }
 
                 if (studentsExit.ToList().Count > 0)
                 {
-                    await StudentService.SaveStudentStudentCheckTime(studentsExit);
-                    await StudentService.SentStudentNotifyMessage(studentsExit, SentType.Exit);
+                    await Task.Run(() =>
+                    {
+                        StudentService.SaveStudentStudentCheckTime(studentsExit);
+                    });
+
+                    await Task.Run(() =>
+                    {
+                        StudentService.SentStudentNotifyMessage(studentsExit, SentType.Exit);
+                    });
                 }
             }
             catch (Exception ex)
             {
+                await Task.Run(() => {
+                    StudentService.SaveExceptionLog(ex);
+                });
             }
             
         }

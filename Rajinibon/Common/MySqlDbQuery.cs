@@ -44,5 +44,14 @@ namespace Rajinibon.Common
                 VALUES(?EmpId, ?SentType, ?Status, ?SentTime);
             ";
         }
+
+        public static string SaveExceptionLog()
+        {
+            return @"
+                INSERT INTO rajinibon.exception_logs
+                (message, stack_trace)
+                VALUES(?Message, ?StackTrace);
+            ";
+        }
     }
 }

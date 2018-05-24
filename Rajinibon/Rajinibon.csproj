@@ -100,6 +100,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="GlobalConfig.cs" />
+    <Compile Include="Models\ExceptionLog.cs" />
     <Compile Include="Models\ResponseMessage.cs" />
     <Compile Include="Models\StudentCheckTime.cs" />
     <Compile Include="Models\StudentSentMessage.cs" />

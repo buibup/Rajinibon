@@ -21,6 +21,7 @@ namespace Rajinibon.Services
             DbfDataConnection = new DbfConnector();
             MySqlDataConnection = new MySqlConnectors();
         }
+
         public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesEntry(string date)
         {
             var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
@@ -41,7 +42,6 @@ namespace Rajinibon.Services
 
             // get diff between dbf and mysql
             var studentsEntry = studentsEntryDbf.Where(s => !studentsEntryDb.Any(s2 => s2.EmpId == s.EmpId));
-
 
             return studentsEntry.StudentCheckTimesFirstTime();
         }
@@ -110,93 +110,88 @@ namespace Rajinibon.Services
                 }
             });
 
-
             return result;
         }
 
         public async Task SentStudentNotifyMessage(IEnumerable<StudentCheckTime> models, SentType sentType)
         {
-            
-
-            var url = GlobalConfig.AppSettings("sentMessageService")
+            try
+            {
+                var url = GlobalConfig.AppSettings("sentMessageService")
                 .Replace("{schoolCode}", GlobalConfig.AppSettings("schoolCode"))
                 .Replace("{roleCode}", GlobalConfig.AppSettings("roleCode"));
 
-            foreach (var item in models)
-            {
-                var results = new List<StudentSentMessage>();
-                var client = new RestClient(url);
-                var request = new RestRequest(Method.POST);
-                request.AddBody("content-type", "application/form-data");
+                var studentSentMessageDb = GetStudentSentMessageEntryAsync(Helper.GetDate("current")).Result.ToList();
 
-                request.AddParameter("students", "999902");
-                request.AddParameter("message", $"ID: {item.EmpId} Name: {item.EmpName} {sentType.ToString()}: {item.ChkTime}");
-                request.AddParameter("rooms", "");
-                request.AddParameter("username", "0411");
+                var studentForSentMessage = models.Where(s => !studentSentMessageDb.Any(s2 => s.EmpId == s2.EmpId));
 
-                //request.AddParameter("students", "999902");
-                //request.AddParameter("message", "test");
-                //request.AddParameter("rooms", "");
-                //request.AddParameter("username", "0411");
-
-                await Task.Run(() =>
+                foreach (var item in studentForSentMessage)
                 {
-                    client.ExecuteAsync(request, response =>
+                    var results = new List<StudentSentMessage>();
+                    var client = new RestClient(url);
+                    var request = new RestRequest(Method.POST);
+                    request.AddBody("content-type", "application/form-data");
+
+                    request.AddParameter("students", "999902");
+                    request.AddParameter("message", $"ID: {item.EmpId} Name: {item.EmpName} {sentType.ToString()}: {item.ChkTime}");
+                    request.AddParameter("rooms", "");
+                    request.AddParameter("username", "0411");
+
+                    //request.AddParameter("students", "999902");
+                    //request.AddParameter("message", "test");
+                    //request.AddParameter("rooms", "");
+                    //request.AddParameter("username", "0411");
+
+                    await Task.Run(() =>
                     {
-
-                        var data = response.Content;
-
-                        StudentSentMessage model = new StudentSentMessage();
-                        var json = response.Content;
-
-                        ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
-
-                        if(res != null)
+                        client.ExecuteAsync(request, async response =>
                         {
-                            if (res.success == "1")
+
+                            var data = response.Content;
+
+                            StudentSentMessage model = new StudentSentMessage();
+                            var json = response.Content;
+
+                            ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
+
+                            if (res != null)
                             {
-                                model = new StudentSentMessage()
+                                if (res.success == "1")
                                 {
-                                    StudentCheckTimeId = item.Id,
-                                    EmpId = item.EmpId,
-                                    Status = $"{SentStatus.Success}",
-                                    SentType = sentType.ToString(),
-                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:dd"))
-                                };
-                                results.Add(model);
-                            }
-                            else
-                            {
-                                model = new StudentSentMessage()
+                                    model = new StudentSentMessage()
+                                    {
+                                        StudentCheckTimeId = item.Id,
+                                        EmpId = item.EmpId,
+                                        Status = $"{SentStatus.Success}",
+                                        SentType = sentType.ToString(),
+                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:dd"))
+                                    };
+                                    results.Add(model);
+                                }
+                                else
                                 {
-                                    StudentCheckTimeId = item.Id,
-                                    EmpId = item.EmpId,
+                                    model = new StudentSentMessage()
+                                    {
+                                        StudentCheckTimeId = item.Id,
+                                        EmpId = item.EmpId,
 
-                                    Status = $"{SentStatus.Success}",
-                                    SentType = sentType.ToString(),
-                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:dd"))
-                                };
-                                results.Add(model);
-                            }
+                                        Status = $"{SentStatus.Success}",
+                                        SentType = sentType.ToString(),
+                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:dd"))
+                                    };
+                                    results.Add(model);
+                                }
 
-                            try
-                            {
-                                MySqlDataConnection.SaveStudentSentMessage(results);
+                                await MySqlDataConnection.SaveStudentSentMessage(results);
                             }
-                            catch (Exception ex)
-                            {
-
-                            }
-                            
-                        }
+                        });
                     });
-                });
+                }
             }
-
-            //if(results.ToList().Count > 0)
-            //{
-            //    await MySqlDataConnection.SaveStudentSentMessage(results);
-            //}
+            catch (Exception ex)
+            {
+                await SaveExceptionLog(ex);
+            }
         }
 
         public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageEntryAsync(string date)
@@ -228,6 +223,11 @@ namespace Rajinibon.Services
         public Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageExit(string date)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task SaveExceptionLog(Exception ex)
+        {
+            await MySqlDataConnection.SaveExceptionLog(ex);
         }
     }
 }

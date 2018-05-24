@@ -38,6 +38,19 @@ namespace Rajinibon.DataAccess
             return results.GetStudentSentMessage(timeStart, timeEnd);
         }
 
+        public async Task SaveExceptionLog(Exception ex)
+        {
+            var model = new ExceptionLog()
+            {
+                Message = ex.Message.ToString(),
+                StackTrace = ex.StackTrace.ToString()
+            };
+            using(var connection = new MySqlConnection(connString))
+            {
+                await connection.ExecuteAsync(MySqlDbQuery.SaveExceptionLog(), ex);
+            }
+        }
+
         public async Task SaveStudentCheckTimes(IEnumerable<StudentCheckTime> models)
         {
             try
@@ -50,7 +63,6 @@ namespace Rajinibon.DataAccess
             catch (Exception)
             {
             }
-
         }
 
         public async Task SaveStudentSentMessage(IEnumerable<StudentSentMessage> models)
@@ -64,6 +76,7 @@ namespace Rajinibon.DataAccess
             }
             catch (Exception ex)
             {
+                await SaveExceptionLog(ex);
             }
         }
     }
