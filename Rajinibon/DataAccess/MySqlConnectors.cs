@@ -38,6 +38,22 @@ namespace Rajinibon.DataAccess
             return results.GetStudentSentMessage(timeStart, timeEnd);
         }
 
+        public async Task RemoveStudentsCheckTimeLess(string date)
+        {
+            using(var connection = new MySqlConnection(connString))
+            {
+                await connection.QueryAsync(MySqlDbQuery.RemoveStudentsCheckTimeLess(), new { chk_time = date });
+            }
+        }
+
+        public async Task RemoveStudentsSentMessageLess(string date)
+        {
+            using (var connection = new MySqlConnection(connString))
+            {
+                await connection.QueryAsync(MySqlDbQuery.RemoveStudentsSentMessageLess(), new { sent_time = date });
+            }
+        }
+
         public async Task SaveExceptionLog(Exception ex)
         {
             var model = new ExceptionLog()

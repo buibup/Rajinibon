@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rajinibon.Common;
@@ -70,9 +71,10 @@ namespace Rajinibon.Services
             return studentsExit.StudentCheckTimesFirstTime();
         }
 
-        public Task RemoveStudentPass()
+        public async Task RemoveStudentsLess(string date)
         {
-            throw new NotImplementedException();
+            await MySqlDataConnection.RemoveStudentsCheckTimeLess(date);
+            await MySqlDataConnection.RemoveStudentsSentMessageLess(date);
         }
 
         public async Task SaveStudentStudentCheckTime(IEnumerable<StudentCheckTime> models)
@@ -137,10 +139,8 @@ namespace Rajinibon.Services
                     request.AddParameter("rooms", "");
                     request.AddParameter("username", "0411");
 
-                    //request.AddParameter("students", "999902");
-                    //request.AddParameter("message", "test");
-                    //request.AddParameter("rooms", "");
-                    //request.AddParameter("username", "0411");
+                    // delay x sec
+                    //Thread.Sleep(TimeSpan.FromSeconds(2));
 
                     await Task.Run(() =>
                     {

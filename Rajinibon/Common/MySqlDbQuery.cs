@@ -48,9 +48,25 @@ namespace Rajinibon.Common
         public static string SaveExceptionLog()
         {
             return @"
-                INSERT INTO rajinibon.exception_logs
+                INSERT INTO exception_logs
                 (message, stack_trace)
                 VALUES(?Message, ?StackTrace);
+            ";
+        }
+
+        public static string RemoveStudentsCheckTimeLess()
+        {
+            return @"
+                DELETE FROM students_check_time
+                WHERE date(chk_time) < date(?)
+            ";
+        }
+
+        public static string RemoveStudentsSentMessageLess()
+        {
+            return @"
+                DELETE FROM students_sent_message
+                WHERE date(sent_time) < date(?)
             ";
         }
     }
