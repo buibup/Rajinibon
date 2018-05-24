@@ -164,7 +164,7 @@ namespace Rajinibon.Services
                                         EmpId = item.EmpId,
                                         Status = $"{SentStatus.Success}",
                                         SentType = sentType.ToString(),
-                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:dd"))
+                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyyMMdd HH:mm"))
                                     };
                                     results.Add(model);
                                 }
@@ -175,9 +175,9 @@ namespace Rajinibon.Services
                                         StudentCheckTimeId = item.Id,
                                         EmpId = item.EmpId,
 
-                                        Status = $"{SentStatus.Success}",
+                                        Status = $"{SentStatus.Error} : {res.error}",
                                         SentType = sentType.ToString(),
-                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:dd"))
+                                        SentTime = DateTime.Now
                                     };
                                     results.Add(model);
                                 }
