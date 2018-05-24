@@ -36,6 +36,7 @@ namespace Rajinibon.Common
             ";
         }
 
+       
         public static string SaveStudentSentMessages()
         {
             return @"

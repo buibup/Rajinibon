@@ -123,7 +123,21 @@ namespace Rajinibon.Services
                 .Replace("{schoolCode}", GlobalConfig.AppSettings("schoolCode"))
                 .Replace("{roleCode}", GlobalConfig.AppSettings("roleCode"));
 
-                var studentSentMessageDb = GetStudentSentMessageEntryAsync(Helper.GetDate("current")).Result.ToList();
+                var studentSentMessageDb = new List<StudentSentMessage>();
+
+
+                if(sentType == SentType.Entry)
+                {
+                    studentSentMessageDb = GetStudentSentMessageEntryAsync(Helper.GetDate("current")).Result.ToList();
+                    var entryError = studentSentMessageDb.Where(s => s.Status.ToLower() != "success");
+                    var entrySuccess = studentSentMessageDb.Where(s => s.Status.ToLower() == "success");
+                }
+                else
+                {
+                    studentSentMessageDb = GetStudentSentMessageExitAsync(Helper.GetDate("current")).Result.ToList();
+                    var exitError = studentSentMessageDb.Where(s => s.Status.ToLower() != "success");
+                    var exitSuccess = studentSentMessageDb.Where(s => s.Status.ToLower() == "success");
+                }
 
                 var studentForSentMessage = models.Where(s => !studentSentMessageDb.Any(s2 => s.EmpId == s2.EmpId));
 
@@ -220,9 +234,30 @@ namespace Rajinibon.Services
             return results.StudentStudentSentMessageFirstTime();
         }
 
-        public Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageExit(string date)
+        public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageExitAsync(string date)
         {
-            throw new NotImplementedException();
+            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
+
+            if (data.ToList().Count == 0) { return new List<StudentSentMessage>(); }
+
+            var entryStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
+            var entryEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
+
+            // get student entry from dbf file
+            var studentsExitDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
+
+            // get student sent message entry from MySql
+            var studentsSentMessagesExitDb = await MySqlDataConnection.GetStudentSentMessages(date.GetDate(), timeStart, timeEnd);
+
+            // get diff between dbf and mysql
+            var studentsExit = studentsExitDbf.Where(s => !studentsSentMessagesExitDb.Any(s2 => s2.EmpId == s.EmpId));
+
+            var results = new List<StudentSentMessage>();
+
+            return results.StudentStudentSentMessageFirstTime();
         }
 
         public async Task SaveExceptionLog(Exception ex)

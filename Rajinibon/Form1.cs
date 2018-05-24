@@ -17,11 +17,12 @@ namespace Rajinibon
 {
     public partial class Form1 : Form
     {
-        IStudentService StudentService { get; set; }
+        IStudentService _StudentService { get; set; }
+        static readonly object _object = new object();
 
         public Form1()
         {
-            StudentService = new StudentService();
+            _StudentService = new StudentService();
 
             InitializeComponent();
         }
@@ -30,6 +31,8 @@ namespace Rajinibon
         {
             try
             {
+                _StudentService.RemoveStudentsLess(GlobalConfig.Date);
+
                 var timeStartConfig = GlobalConfig.AppSettings("taskStartTime").Split(':');
                 var timeEndConfig = GlobalConfig.AppSettings("taskEndTime").Split(':');
 
@@ -40,7 +43,7 @@ namespace Rajinibon
             }
             catch (Exception ex)
             {
-                StudentService.SaveExceptionLog(ex);
+                _StudentService.SaveExceptionLog(ex);
             }
             
         }
@@ -75,7 +78,7 @@ namespace Rajinibon
             }
             catch (Exception ex)
             {
-                StudentService.SaveExceptionLog(ex);
+                _StudentService.SaveExceptionLog(ex);
             }
         }
 
@@ -83,41 +86,51 @@ namespace Rajinibon
         {
             try
             {
-                var studentsEntry = StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date).Result.ToList();
+                var studentsEntry = _StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date).Result.ToList();
 
-                var studentsExit = StudentService.GetStudentCheckTimesExit(GlobalConfig.Date).Result.ToList();
+                var studentsExit = _StudentService.GetStudentCheckTimesExit(GlobalConfig.Date).Result.ToList();
 
-                if (studentsEntry.ToList().Count > 0)
+                try
                 {
-                    await Task.Run(() => 
+                    // Thead safe => Monitor / Lock 
+                    Monitor.Enter(_object);
+                    if (studentsEntry.ToList().Count > 0)
                     {
-                        StudentService.SaveStudentStudentCheckTime(studentsEntry);
-                    });
+                        await Task.Run(() =>
+                        {
+                            _StudentService.SaveStudentStudentCheckTime(studentsEntry);
+                        });
 
-                    await Task.Run(() =>
+                        await Task.Run(() =>
+                        {
+                            _StudentService.SentStudentNotifyMessage(studentsEntry, SentType.Entry);
+
+                        });
+                    }
+
+                    if (studentsExit.ToList().Count > 0)
                     {
-                        StudentService.SentStudentNotifyMessage(studentsEntry, SentType.Entry);
+                        await Task.Run(() =>
+                        {
+                            _StudentService.SaveStudentStudentCheckTime(studentsExit);
+                        });
 
-                    });
+                        await Task.Run(() =>
+                        {
+                            _StudentService.SentStudentNotifyMessage(studentsExit, SentType.Exit);
+                        });
+                    }
+                    Monitor.Exit(_object);
                 }
-
-                if (studentsExit.ToList().Count > 0)
+                catch(Exception ex)
                 {
-                    await Task.Run(() =>
-                    {
-                        StudentService.SaveStudentStudentCheckTime(studentsExit);
-                    });
-
-                    await Task.Run(() =>
-                    {
-                        StudentService.SentStudentNotifyMessage(studentsExit, SentType.Exit);
-                    });
+                    await _StudentService.SaveExceptionLog(ex);
                 }
             }
             catch (Exception ex)
             {
                 await Task.Run(() => {
-                    StudentService.SaveExceptionLog(ex);
+                    _StudentService.SaveExceptionLog(ex);
                 });
             }
             
