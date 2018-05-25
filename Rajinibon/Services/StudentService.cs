@@ -228,5 +228,10 @@ namespace Rajinibon.Services
         {
             await MySqlDataConnection.SaveExceptionLog(ex);
         }
+
+        public bool SentMessageSuccess(IEnumerable<StudentCheckTime> models, SentType sentType)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
