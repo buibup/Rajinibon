@@ -5,7 +5,6 @@ namespace Rajinibon.Models
     public class StudentSentMessage
     {
         public int Id { get; set; }
-        public int StudentCheckTimeId { get; set; }
         public string EmpId { get; set; }
         public string Status { get; set; }
         public string SentType { get; set; }

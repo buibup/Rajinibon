@@ -125,18 +125,13 @@ namespace Rajinibon.Services
 
                 var studentSentMessageDb = new List<StudentSentMessage>();
 
-
                 if(sentType == SentType.Entry)
                 {
                     studentSentMessageDb = GetStudentSentMessageEntryAsync(Helper.GetDate("current")).Result.ToList();
-                    var entryError = studentSentMessageDb.Where(s => s.Status.ToLower() != "success");
-                    var entrySuccess = studentSentMessageDb.Where(s => s.Status.ToLower() == "success");
                 }
-                else
+                else if(sentType == SentType.Exit)
                 {
                     studentSentMessageDb = GetStudentSentMessageExitAsync(Helper.GetDate("current")).Result.ToList();
-                    var exitError = studentSentMessageDb.Where(s => s.Status.ToLower() != "success");
-                    var exitSuccess = studentSentMessageDb.Where(s => s.Status.ToLower() == "success");
                 }
 
                 var studentForSentMessage = models.Where(s => !studentSentMessageDb.Any(s2 => s.EmpId == s2.EmpId));
@@ -154,7 +149,7 @@ namespace Rajinibon.Services
                     request.AddParameter("username", "0411");
 
                     // delay x sec
-                    //Thread.Sleep(TimeSpan.FromSeconds(2));
+                    Thread.Sleep(TimeSpan.FromSeconds(int.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
 
                     await Task.Run(() =>
                     {
@@ -174,22 +169,8 @@ namespace Rajinibon.Services
                                 {
                                     model = new StudentSentMessage()
                                     {
-                                        StudentCheckTimeId = item.Id,
                                         EmpId = item.EmpId,
                                         Status = $"{SentStatus.Success}",
-                                        SentType = sentType.ToString(),
-                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
-                                    };
-                                    results.Add(model);
-                                }
-                                else
-                                {
-                                    model = new StudentSentMessage()
-                                    {
-                                        StudentCheckTimeId = item.Id,
-                                        EmpId = item.EmpId,
-
-                                        Status = $"{SentStatus.Error} : {res.error}",
                                         SentType = sentType.ToString(),
                                         SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
                                     };
@@ -210,54 +191,30 @@ namespace Rajinibon.Services
 
         public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageEntryAsync(string date)
         {
-            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
-
-            if (data.ToList().Count == 0) { return new List<StudentSentMessage>(); }
-
             var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
             var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
 
             var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
-            // get student entry from dbf file
-            var studentsEntryDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
-
             // get student sent message entry from MySql
             var studentsSentMessagesEntryDb = await MySqlDataConnection.GetStudentSentMessages(date.GetDate(), timeStart, timeEnd);
 
-            // get diff between dbf and mysql
-            var studentsEntry = studentsEntryDbf.Where(s => !studentsSentMessagesEntryDb.Any(s2 => s2.EmpId == s.EmpId));
-
-            var results = new List<StudentSentMessage>();
-
-            return results.StudentStudentSentMessageFirstTime();
+            return studentsSentMessagesEntryDb;
         }
 
         public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageExitAsync(string date)
         {
-            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
-
-            if (data.ToList().Count == 0) { return new List<StudentSentMessage>(); }
-
             var entryStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
             var entryEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
 
             var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
-            // get student entry from dbf file
-            var studentsExitDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
-
             // get student sent message entry from MySql
             var studentsSentMessagesExitDb = await MySqlDataConnection.GetStudentSentMessages(date.GetDate(), timeStart, timeEnd);
 
-            // get diff between dbf and mysql
-            var studentsExit = studentsExitDbf.Where(s => !studentsSentMessagesExitDb.Any(s2 => s2.EmpId == s.EmpId));
-
-            var results = new List<StudentSentMessage>();
-
-            return results.StudentStudentSentMessageFirstTime();
+            return studentsSentMessagesExitDb;
         }
 
         public async Task SaveExceptionLog(Exception ex)

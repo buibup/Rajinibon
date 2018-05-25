@@ -59,7 +59,7 @@ namespace Rajinibon.Common
         {
             return @"
                 DELETE FROM students_check_time
-                WHERE date(chk_time) < date(?)
+                WHERE date(chk_time) < ?
             ";
         }
 
@@ -67,7 +67,7 @@ namespace Rajinibon.Common
         {
             return @"
                 DELETE FROM students_sent_message
-                WHERE date(sent_time) < date(?)
+                WHERE date(sent_time) < ?
             ";
         }
     }

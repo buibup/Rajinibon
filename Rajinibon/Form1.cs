@@ -31,7 +31,7 @@ namespace Rajinibon
         {
             try
             {
-                _StudentService.RemoveStudentsLess(GlobalConfig.Date);
+                _StudentService.RemoveStudentsLess(GlobalConfig.Date.GetDate());
 
                 var timeStartConfig = GlobalConfig.AppSettings("taskStartTime").Split(':');
                 var timeEndConfig = GlobalConfig.AppSettings("taskEndTime").Split(':');
@@ -69,11 +69,11 @@ namespace Rajinibon
                     while (_startTime + s.Elapsed <= _endTime)
                     {
                         RunsAt();
-                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                        Thread.Sleep(TimeSpan.FromSeconds(int.Parse(GlobalConfig.AppSettings("ThreadSleepTaskSec"))));
                     }
 
                     s.Stop();
-                    MessageBox.Show("Task Completed.");
+                    //MessageBox.Show("Task Completed.");
                 }, null, timeToGo, Timeout.InfiniteTimeSpan);
             }
             catch (Exception ex)
