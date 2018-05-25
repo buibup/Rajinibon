@@ -86,12 +86,14 @@
   <ItemGroup>
     <Compile Include="Common\Helper.cs" />
     <Compile Include="Common\MySqlDbQuery.cs" />
+    <Compile Include="Common\Singleton.cs" />
     <Compile Include="DataAccess\DbfConnector.cs" />
     <Compile Include="DataAccess\DbfConnectorProcessor.cs" />
     <Compile Include="DataAccess\IDbfDataConnection.cs" />
     <Compile Include="DataAccess\IMySqlDataConnection.cs" />
     <Compile Include="DataAccess\MySqlConnectors.cs" />
     <Compile Include="DataAccess\MySqlConnectorsProcessor.cs" />
+    <Compile Include="DataAccess\SentMessage.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

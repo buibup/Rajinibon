@@ -1,4 +1,5 @@
 ﻿using Rajinibon.Common;
+using Rajinibon.DataAccess;
 using Rajinibon.Models;
 using Rajinibon.Services;
 using System;
@@ -82,6 +83,13 @@ namespace Rajinibon
             }
         }
 
+        private bool SentMessageSuccess()
+        {
+
+
+            return true;
+        }
+
         private async void RunsAt()
         {
             try
@@ -91,9 +99,6 @@ namespace Rajinibon
 
                 try
                 {
-                    // Thead safe => Monitor / Lock 
-                    Monitor.Enter(_object);
-
                     // students entry check time
                     if (studentsEntry.Item1.ToList().Count > 0)
                     {
@@ -101,18 +106,14 @@ namespace Rajinibon
                         {
                             _StudentService.SaveStudentStudentCheckTime(studentsEntry.Item1);
                         });
-
-
                     }
 
                     // students entry sent time
                     if (studentsEntry.Item2.ToList().Count > 0)
                     {
-                        await Task.Run(() =>
-                        {
-                            _StudentService.SentStudentNotifyMessage(studentsEntry.Item2, SentType.Entry);
+                        SentMessage.StudentSentMessage(studentsEntry.Item2, SentType.Entry);
 
-                        });
+                        //_StudentService.SentStudentNotifyMessage(studentsEntry.Item2, SentType.Entry);
                     }
 
                     // students exit check time
@@ -127,13 +128,10 @@ namespace Rajinibon
                     // students exit sent time
                     if (studentsExit.Item2.ToList().Count > 0)
                     {
-                        await Task.Run(() =>
-                        {
-                            _StudentService.SentStudentNotifyMessage(studentsExit.Item2, SentType.Exit);
-                        });
-                    }
+                        SentMessage.StudentSentMessage(studentsExit.Item2, SentType.Exit);
+                        //_StudentService.SentStudentNotifyMessage(studentsExit.Item2, SentType.Exit);
 
-                    Monitor.Exit(_object);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -147,7 +145,6 @@ namespace Rajinibon
                     _StudentService.SaveExceptionLog(ex);
                 });
             }
-
         }
     }
 }

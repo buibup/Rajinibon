@@ -17,7 +17,8 @@ namespace Rajinibon.Services
         Task SaveStudentStudentCheckTime(IEnumerable<StudentCheckTime> models);
         Task SaveStudentSentMessage(IEnumerable<StudentCheckTime> models);
         Task RemoveStudentsLess(string date);
-        Task SentStudentNotifyMessage(IEnumerable<StudentCheckTime> models, SentType sentType);
+        void SentStudentNotifyMessage(IEnumerable<StudentCheckTime> models, SentType sentType);
         Task SaveExceptionLog(Exception ex);
+        bool SentMessageSuccess(IEnumerable<StudentCheckTime> models, SentType sentType);
     }
 }

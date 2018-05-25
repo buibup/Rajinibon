@@ -125,7 +125,7 @@ namespace Rajinibon.Services
             return result;
         }
 
-        public async Task SentStudentNotifyMessage(IEnumerable<StudentCheckTime> models, SentType sentType)
+        public void SentStudentNotifyMessage(IEnumerable<StudentCheckTime> models, SentType sentType)
         {
             try
             {
@@ -161,41 +161,38 @@ namespace Rajinibon.Services
                     // delay x sec
                     Thread.Sleep(TimeSpan.FromSeconds(int.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
 
-                    await Task.Run(() =>
+                    client.ExecuteAsync(request, async response =>
                     {
-                        client.ExecuteAsync(request, async response =>
+
+                        var data = response.Content;
+
+                        StudentSentMessage model = new StudentSentMessage();
+                        var json = response.Content;
+
+                        ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
+
+                        if (res != null)
                         {
-
-                            var data = response.Content;
-
-                            StudentSentMessage model = new StudentSentMessage();
-                            var json = response.Content;
-
-                            ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
-
-                            if (res != null)
+                            if (res.success == "1")
                             {
-                                if (res.success == "1")
+                                model = new StudentSentMessage()
                                 {
-                                    model = new StudentSentMessage()
-                                    {
-                                        EmpId = item.EmpId,
-                                        Status = $"{SentStatus.Success}",
-                                        SentType = sentType.ToString(),
-                                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
-                                    };
-                                    results.Add(model);
-                                }
-
-                                await MySqlDataConnection.SaveStudentSentMessage(results);
+                                    EmpId = item.EmpId,
+                                    Status = $"{SentStatus.Success}",
+                                    SentType = sentType.ToString(),
+                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
+                                };
+                                results.Add(model);
                             }
-                        });
+
+                            await MySqlDataConnection.SaveStudentSentMessage(results);
+                        }
                     });
                 }
             }
             catch (Exception ex)
             {
-                await SaveExceptionLog(ex);
+                SaveExceptionLog(ex).ConfigureAwait(false);
             }
         }
 
