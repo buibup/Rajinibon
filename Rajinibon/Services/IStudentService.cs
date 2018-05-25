@@ -9,8 +9,8 @@ namespace Rajinibon.Services
 {
     interface IStudentService
     {
-        Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesEntry(string date);
-        Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesExit(string date);
+        Task<Tuple<List<StudentCheckTime>, List<StudentCheckTime>>> GetStudentCheckTimesEntry(string date);
+        Task<Tuple<List<StudentCheckTime>, List<StudentCheckTime>>> GetStudentCheckTimesExit(string date);
         Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageEntryAsync(string date);
         Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageExitAsync(string date);
         Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(IEnumerable<StudentCheckTime> models, TimeSpan timeStart, TimeSpan timeEnd);

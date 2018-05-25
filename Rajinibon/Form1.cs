@@ -45,7 +45,7 @@ namespace Rajinibon
             {
                 _StudentService.SaveExceptionLog(ex);
             }
-            
+
         }
 
         private System.Threading.Timer timer;
@@ -86,54 +86,68 @@ namespace Rajinibon
         {
             try
             {
-                var studentsEntry = _StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date).Result.ToList();
-
-                var studentsExit = _StudentService.GetStudentCheckTimesExit(GlobalConfig.Date).Result.ToList();
+                var studentsEntry = await _StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
+                var studentsExit = await _StudentService.GetStudentCheckTimesExit(GlobalConfig.Date);
 
                 try
                 {
                     // Thead safe => Monitor / Lock 
                     Monitor.Enter(_object);
-                    if (studentsEntry.ToList().Count > 0)
+
+                    // students entry check time
+                    if (studentsEntry.Item1.ToList().Count > 0)
                     {
                         await Task.Run(() =>
                         {
-                            _StudentService.SaveStudentStudentCheckTime(studentsEntry);
+                            _StudentService.SaveStudentStudentCheckTime(studentsEntry.Item1);
                         });
 
+
+                    }
+
+                    // students entry sent time
+                    if (studentsEntry.Item2.ToList().Count > 0)
+                    {
                         await Task.Run(() =>
                         {
-                            _StudentService.SentStudentNotifyMessage(studentsEntry, SentType.Entry);
+                            _StudentService.SentStudentNotifyMessage(studentsEntry.Item2, SentType.Entry);
 
                         });
                     }
 
-                    if (studentsExit.ToList().Count > 0)
+                    // students exit check time
+                    if (studentsExit.Item1.ToList().Count > 0)
                     {
                         await Task.Run(() =>
                         {
-                            _StudentService.SaveStudentStudentCheckTime(studentsExit);
-                        });
-
-                        await Task.Run(() =>
-                        {
-                            _StudentService.SentStudentNotifyMessage(studentsExit, SentType.Exit);
+                            _StudentService.SaveStudentStudentCheckTime(studentsExit.Item1);
                         });
                     }
+
+                    // students exit sent time
+                    if (studentsExit.Item2.ToList().Count > 0)
+                    {
+                        await Task.Run(() =>
+                        {
+                            _StudentService.SentStudentNotifyMessage(studentsExit.Item2, SentType.Exit);
+                        });
+                    }
+
                     Monitor.Exit(_object);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     await _StudentService.SaveExceptionLog(ex);
                 }
             }
             catch (Exception ex)
             {
-                await Task.Run(() => {
+                await Task.Run(() =>
+                {
                     _StudentService.SaveExceptionLog(ex);
                 });
             }
-            
+
         }
     }
 }

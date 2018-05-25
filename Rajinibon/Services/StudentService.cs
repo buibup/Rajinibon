@@ -23,11 +23,16 @@ namespace Rajinibon.Services
             MySqlDataConnection = new MySqlConnectors();
         }
 
-        public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesEntry(string date)
+        public async Task<Tuple<List<StudentCheckTime>, List<StudentCheckTime>>> GetStudentCheckTimesEntry(string date)
         {
             var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
 
-            if (data.ToList().Count == 0) { return new List<StudentCheckTime>(); }
+            if (data.ToList().Count == 0)
+            {
+                List<StudentCheckTime> item1 = new List<StudentCheckTime>();
+                List<StudentCheckTime> item2 = new List<StudentCheckTime>();
+                return Tuple.Create(item1, item2);
+            }
 
             var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
             var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
@@ -44,14 +49,19 @@ namespace Rajinibon.Services
             // get diff between dbf and mysql
             var studentsEntry = studentsEntryDbf.Where(s => !studentsEntryDb.Any(s2 => s2.EmpId == s.EmpId));
 
-            return studentsEntry.StudentCheckTimesFirstTime();
+            return Tuple.Create(studentsEntry.StudentCheckTimesFirstTime(), studentsEntryDbf.StudentCheckTimesFirstTime());
         }
 
-        public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimesExit(string date)
+        public async Task<Tuple<List<StudentCheckTime>, List<StudentCheckTime>>> GetStudentCheckTimesExit(string date)
         {
             var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
 
-            if (data.ToList().Count == 0) { return new List<StudentCheckTime>(); }
+            if (data.ToList().Count == 0)
+            {
+                List<StudentCheckTime> item1 = new List<StudentCheckTime>();
+                List<StudentCheckTime> item2 = new List<StudentCheckTime>();
+                return Tuple.Create(item1, item2);
+            }
 
             var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
             var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
@@ -68,7 +78,7 @@ namespace Rajinibon.Services
             // get diff between dbf and mysql
             var studentsExit = studentsExitDbf.Where(s => !studentsExitDb.Any(s2 => s2.EmpId == s.EmpId));
 
-            return studentsExit.StudentCheckTimesFirstTime();
+            return Tuple.Create(studentsExit.StudentCheckTimesFirstTime(), studentsExitDbf.StudentCheckTimesFirstTime());
         }
 
         public async Task RemoveStudentsLess(string date)
