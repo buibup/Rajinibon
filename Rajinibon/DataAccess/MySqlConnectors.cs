@@ -81,7 +81,22 @@ namespace Rajinibon.DataAccess
             }
         }
 
-        public async Task SaveStudentSentMessage(IEnumerable<StudentSentMessage> models)
+        public void SaveStudentSentMessage(IEnumerable<StudentSentMessage> models)
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(connString))
+                {
+                    connection.Execute(MySqlDbQuery.SaveStudentSentMessages(), models);
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveExceptionLog(ex).ConfigureAwait(false);
+            }
+        }
+
+        public async Task SaveStudentSentMessageAsync(IEnumerable<StudentSentMessage> models)
         {
             try
             {

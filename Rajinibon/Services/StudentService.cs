@@ -25,6 +25,7 @@ namespace Rajinibon.Services
 
         public async Task<Tuple<List<StudentCheckTime>, List<StudentCheckTime>>> GetStudentCheckTimesEntry(string date)
         {
+
             var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
 
             if (data.ToList().Count == 0)
@@ -133,18 +134,66 @@ namespace Rajinibon.Services
                 .Replace("{schoolCode}", GlobalConfig.AppSettings("schoolCode"))
                 .Replace("{roleCode}", GlobalConfig.AppSettings("roleCode"));
 
-                var studentSentMessageDb = new List<StudentSentMessage>();
 
-                if(sentType == SentType.Entry)
-                {
-                    studentSentMessageDb = GetStudentSentMessageEntryAsync(Helper.GetDate("current")).Result.ToList();
-                }
-                else if(sentType == SentType.Exit)
-                {
-                    studentSentMessageDb = GetStudentSentMessageExitAsync(Helper.GetDate("current")).Result.ToList();
-                }
+                var studentForSentMessage = new List<StudentCheckTime>();
 
-                var studentForSentMessage = models.Where(s => !studentSentMessageDb.Any(s2 => s.EmpId == s2.EmpId));
+                if(models.ToList().Count > 0)
+                {
+                    studentForSentMessage = models.ToList();
+                }
+                else
+                {
+                    if(sentType == SentType.Entry)
+                    {
+                        GlobalConfig.StudentCheckTimes = GetStudentsEntryMySql(GlobalConfig.Date);
+                        GlobalConfig.StudentSentMessages.StudentStudentSentMessageFirstTime();
+
+                        var diff = GlobalConfig.StudentCheckTimes.ToList().Count - GlobalConfig.StudentSentMessages.ToList().Count;
+
+                        if (diff >=0 && diff <= 10)
+                        {
+                            // get students sent message error
+                            var StudentSentMessagesError = GlobalConfig.StudentSentMessages.Where(s => s.Status.ToLower() != SentStatus.Success.ToString().ToLower());
+
+                            if (StudentSentMessagesError.ToList().Count == 0) { return; }
+
+                            // remove students sent message error from list
+                            GlobalConfig.StudentSentMessages.RemoveAll(s => s.Status.ToLower() != SentStatus.Success.ToString().ToLower());
+
+                            if (GlobalConfig.StudentSentMessages.ToList().Count == 0) { return; }
+
+                            var studentsSentMessageAgain = GlobalConfig.StudentCheckTimes.Where(s => !GlobalConfig.StudentSentMessages.Any(s2 => s.EmpId == s2.EmpId)).ToList();
+
+                            SentStudentNotifyMessage(studentsSentMessageAgain, sentType);
+                        }
+                    }
+                    else if(sentType == SentType.Exit)
+                    {
+                        GlobalConfig.StudentCheckTimes = GetStudentsExitMySql(GlobalConfig.Date);
+                        GlobalConfig.StudentSentMessages.StudentStudentSentMessageFirstTime();
+
+                        var diff = GlobalConfig.StudentCheckTimes.ToList().Count - GlobalConfig.StudentSentMessages.ToList().Count;
+
+                        if (diff >= 0 && diff <= 10)
+                        {
+                            // get students sent message error
+                            var StudentSentMessagesError = GlobalConfig.StudentSentMessages.Where(s => s.Status.ToLower() != SentStatus.Success.ToString().ToLower());
+
+                            if (StudentSentMessagesError.ToList().Count == 0) { return; }
+
+                            // remove students sent message error from list
+                            GlobalConfig.StudentSentMessages.RemoveAll(s => s.Status.ToLower() != SentStatus.Success.ToString().ToLower());
+
+                            if (GlobalConfig.StudentSentMessages.ToList().Count == 0) { return; }
+
+                            var studentsSentMessageAgain = GlobalConfig.StudentCheckTimes.Where(s => !GlobalConfig.StudentSentMessages.Any(s2 => s.EmpId == s2.EmpId)).ToList();
+
+                            SentStudentNotifyMessage(studentsSentMessageAgain, sentType);
+                        }
+                    }
+
+                    return;
+                }
 
                 foreach (var item in studentForSentMessage)
                 {
@@ -159,9 +208,10 @@ namespace Rajinibon.Services
                     request.AddParameter("username", "0411");
 
                     // delay x sec
-                    Thread.Sleep(TimeSpan.FromSeconds(int.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
+                    //Thread.Sleep(TimeSpan.FromSeconds(int.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
+                    Thread.Sleep(100);
 
-                    client.ExecuteAsync(request, async response =>
+                    client.ExecuteAsync(request, response =>
                     {
 
                         var data = response.Content;
@@ -183,16 +233,39 @@ namespace Rajinibon.Services
                                     SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
                                 };
                                 results.Add(model);
+                                GlobalConfig.StudentSentMessages.Add(model);
+                            }
+                            else
+                            {
+                                model = new StudentSentMessage()
+                                {
+                                    EmpId = item.EmpId,
+                                    Status = $"{SentStatus.Error} : {res.error}",
+                                    SentType = sentType.ToString(),
+                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
+                                };
+                                GlobalConfig.StudentSentMessages.Add(model);
                             }
 
-                            await MySqlDataConnection.SaveStudentSentMessage(results);
+                            MySqlDataConnection.SaveStudentSentMessage(results);
+                        }
+                        else
+                        {
+                            model = new StudentSentMessage()
+                            {
+                                EmpId = item.EmpId,
+                                Status = $"{SentStatus.Error}",
+                                SentType = sentType.ToString(),
+                                SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
+                            };
+                            GlobalConfig.StudentSentMessages.Add(model);
                         }
                     });
                 }
             }
             catch (Exception ex)
             {
-                SaveExceptionLog(ex).ConfigureAwait(false);
+                 SaveExceptionLog(ex).ConfigureAwait(false);
             }
         }
 
@@ -232,6 +305,148 @@ namespace Rajinibon.Services
         public bool SentMessageSuccess(IEnumerable<StudentCheckTime> models, SentType sentType)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<List<StudentCheckTime>> GetStudentsEntryDbf(string date)
+        {
+            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
+
+            if(date.ToList().Count == 0) { return new List<StudentCheckTime>(); }
+
+            var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
+            var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
+
+            // get student entry from dbf file
+            var studentsEntryDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
+
+            return studentsEntryDbf.StudentCheckTimesFirstTime();
+        }
+
+        public async Task<List<StudentCheckTime>> GetStudentsExitDbf(string date)
+        {
+            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
+
+            if (date.ToList().Count == 0) { return new List<StudentCheckTime>(); }
+
+            var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
+            var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
+
+            // get student exit from dbf file
+            var studentsExitDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
+
+            return studentsExitDbf.StudentCheckTimesFirstTime();
+        }
+
+        public List<StudentCheckTime> GetStudentsEntryMySql(string date)
+        {
+            var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
+            var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
+
+            var result = MySqlDataConnection.GetStudentCheckTimes(date, timeStart, timeEnd).Result.ToList();
+
+            return result;
+        }
+
+        public List<StudentCheckTime> GetStudentsExitMySql(string date)
+        {
+            var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
+            var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
+
+            var result = MySqlDataConnection.GetStudentCheckTimes(date, timeStart, timeEnd).Result.ToList();
+
+            return result;
+        }
+
+        public List<StudentCheckTime> GetStudentsEntryFromList(List<StudentCheckTime> models)
+        {
+            var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
+            var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
+
+            var result = GetStudentCheckTimes(models, timeStart, timeEnd).Result.ToList();
+
+            return result;
+        }
+
+        public List<StudentCheckTime> GetStudentsExitFromList(List<StudentCheckTime> models)
+        {
+            var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
+            var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
+
+            var result = GetStudentCheckTimes(models, timeStart, timeEnd).Result.ToList();
+
+            return result;
+        }
+
+        public List<StudentSentMessage> GetStudentSentMessageEntryFromList(List<StudentSentMessage> models)
+        {
+            var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
+            var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
+
+            var result = GetStudentSentMessage(models, timeStart, timeEnd).Result.ToList();
+
+            return result;
+        }
+
+        public List<StudentSentMessage> GetStudentSentMessageExitFromList(List<StudentSentMessage> models)
+        {
+            var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
+            var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
+
+            var result = GetStudentSentMessage(models, timeStart, timeEnd).Result.ToList();
+
+            return result;
+        }
+
+        public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessage(IEnumerable<StudentSentMessage> models, TimeSpan timeStart, TimeSpan timeEnd)
+        {
+            var result = new List<StudentSentMessage>();
+
+            await Task.Run(() =>
+            {
+                foreach (var item in models)
+                {
+                    var sentTime = item.SentTime;
+                    var time = new TimeSpan(sentTime.Hour, sentTime.Minute, sentTime.Millisecond);
+
+                    if (time.IsBetween(timeStart, timeEnd))
+                    {
+                        var model = new StudentSentMessage()
+                        {
+                            EmpId = item.EmpId,
+                            Status = item.Status,
+                            SentType = item.SentType,
+                            SentTime = sentTime
+                        };
+                        result.Add(model);
+                    }
+                }
+            });
+
+            return result;
         }
     }
 }

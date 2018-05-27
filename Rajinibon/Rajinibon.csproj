@@ -86,7 +86,6 @@
   <ItemGroup>
     <Compile Include="Common\Helper.cs" />
     <Compile Include="Common\MySqlDbQuery.cs" />
-    <Compile Include="Common\Singleton.cs" />
     <Compile Include="DataAccess\DbfConnector.cs" />
     <Compile Include="DataAccess\DbfConnectorProcessor.cs" />
     <Compile Include="DataAccess\IDbfDataConnection.cs" />
@@ -134,7 +133,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

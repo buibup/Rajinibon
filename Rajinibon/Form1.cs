@@ -19,7 +19,6 @@ namespace Rajinibon
     public partial class Form1 : Form
     {
         IStudentService _StudentService { get; set; }
-        static readonly object _object = new object();
 
         public Form1()
         {
@@ -28,11 +27,11 @@ namespace Rajinibon
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private async void Form1_Load(object sender, EventArgs e)
         {
             try
             {
-                _StudentService.RemoveStudentsLess(GlobalConfig.Date.GetDate());
+                await _StudentService.RemoveStudentsLess(GlobalConfig.Date.GetDate());
 
                 var timeStartConfig = GlobalConfig.AppSettings("taskStartTime").Split(':');
                 var timeEndConfig = GlobalConfig.AppSettings("taskEndTime").Split(':');
@@ -40,17 +39,17 @@ namespace Rajinibon
                 var startTime = new TimeSpan(int.Parse(timeStartConfig[0]), int.Parse(timeStartConfig[1]), int.Parse(timeStartConfig[2]));
                 var endTime = new TimeSpan(int.Parse(timeEndConfig[0]), int.Parse(timeEndConfig[1]), int.Parse(timeEndConfig[2]));
 
-                SetUpTimer(startTime, endTime);
+                await SetUpTimer(startTime, endTime);
             }
             catch (Exception ex)
             {
-                _StudentService.SaveExceptionLog(ex);
+                await _StudentService.SaveExceptionLog(ex);
             }
 
         }
 
         private System.Threading.Timer timer;
-        private void SetUpTimer(TimeSpan startTime, TimeSpan endTime)
+        private async Task SetUpTimer(TimeSpan startTime, TimeSpan endTime)
         {
             try
             {
@@ -69,7 +68,9 @@ namespace Rajinibon
 
                     while (_startTime + s.Elapsed <= _endTime)
                     {
-                        RunsAt();
+                        RunStudentsCheckTime();
+                        //await RunStudentsSentMessage();
+
                         Thread.Sleep(TimeSpan.FromSeconds(int.Parse(GlobalConfig.AppSettings("ThreadSleepTaskSec"))));
                     }
 
@@ -79,71 +80,73 @@ namespace Rajinibon
             }
             catch (Exception ex)
             {
-                _StudentService.SaveExceptionLog(ex);
+                await _StudentService.SaveExceptionLog(ex);
             }
         }
 
-        private bool SentMessageSuccess()
-        {
-
-
-            return true;
-        }
-
-        private async void RunsAt()
+        private void RunStudentsCheckTime()
         {
             try
             {
-                var studentsEntry = await _StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
-                var studentsExit = await _StudentService.GetStudentCheckTimesExit(GlobalConfig.Date);
+                var studentsEntry = _StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date).Result;
+                var studentsExit = _StudentService.GetStudentCheckTimesExit(GlobalConfig.Date).Result;
+                var diffEntry = _StudentService.GetStudentsEntryFromList(GlobalConfig.StudentCheckTimes).ToList().Count - _StudentService.GetStudentSentMessageEntryFromList(GlobalConfig.StudentSentMessages).ToList().Count;
+                var diffExit = _StudentService.GetStudentsExitFromList(GlobalConfig.StudentCheckTimes).ToList().Count - _StudentService.GetStudentSentMessageExitFromList(GlobalConfig.StudentSentMessages).ToList().Count;
 
                 try
                 {
-                    // students entry check time
                     if (studentsEntry.Item1.ToList().Count > 0)
                     {
-                        await Task.Run(() =>
-                        {
-                            _StudentService.SaveStudentStudentCheckTime(studentsEntry.Item1);
-                        });
+                        // save students entry check time
+                        _StudentService.SaveStudentStudentCheckTime(studentsEntry.Item1);
                     }
 
-                    // students entry sent time
-                    if (studentsEntry.Item2.ToList().Count > 0)
+                    if (studentsEntry.Item1.ToList().Count > 0 || (diffEntry >= 0 && diffEntry <= 10))
                     {
-                        SentMessage.StudentSentMessage(studentsEntry.Item2, SentType.Entry);
-
-                        //_StudentService.SentStudentNotifyMessage(studentsEntry.Item2, SentType.Entry);
+                        // students entry sent time
+                        _StudentService.SentStudentNotifyMessage(studentsEntry.Item1, SentType.Entry);
                     }
 
-                    // students exit check time
                     if (studentsExit.Item1.ToList().Count > 0)
                     {
-                        await Task.Run(() =>
-                        {
-                            _StudentService.SaveStudentStudentCheckTime(studentsExit.Item1);
-                        });
+                        // save students exit check time
+                        _StudentService.SaveStudentStudentCheckTime(studentsExit.Item1);
                     }
 
-                    // students exit sent time
-                    if (studentsExit.Item2.ToList().Count > 0)
+                    if (studentsEntry.Item1.ToList().Count > 0 || (diffExit >= 0 && diffExit <= 10))
                     {
-                        SentMessage.StudentSentMessage(studentsExit.Item2, SentType.Exit);
-                        //_StudentService.SentStudentNotifyMessage(studentsExit.Item2, SentType.Exit);
-
+                        // students exit sent time
+                        _StudentService.SentStudentNotifyMessage(studentsExit.Item1, SentType.Exit);
                     }
+
                 }
                 catch (Exception ex)
                 {
-                    await _StudentService.SaveExceptionLog(ex);
+                    _StudentService.SaveExceptionLog(ex);
                 }
             }
             catch (Exception ex)
             {
-                await Task.Run(() =>
-                {
-                    _StudentService.SaveExceptionLog(ex);
-                });
+                _StudentService.SaveExceptionLog(ex);
+            }
+        }
+
+        private async Task RunStudentsSentMessage()
+        {
+
+            var studentsEntryDbf = await _StudentService.GetStudentsEntryDbf(GlobalConfig.Date);
+            var studentsExitDbf = await _StudentService.GetStudentsExitDbf(GlobalConfig.Date);
+
+            // students entry sent time
+            if (studentsEntryDbf.ToList().Count > 0)
+            {
+                _StudentService.SentStudentNotifyMessage(studentsEntryDbf, SentType.Entry);
+            }
+
+            // students exit sent time
+            if (studentsExitDbf.ToList().Count > 0)
+            {
+                _StudentService.SentStudentNotifyMessage(studentsExitDbf, SentType.Exit);
             }
         }
     }
