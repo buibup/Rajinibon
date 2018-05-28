@@ -146,6 +146,10 @@ namespace Rajinibon.Services
                     if(sentType == SentType.Entry)
                     {
                         GlobalConfig.StudentCheckTimes = GetStudentsEntryMySql(GlobalConfig.Date);
+                        if (GlobalConfig.StudentSentMessages.ToList().Count == 0)
+                        {
+                            return;
+                        }
                         GlobalConfig.StudentSentMessages.StudentStudentSentMessageFirstTime();
 
                         var diff = GlobalConfig.StudentCheckTimes.ToList().Count - GlobalConfig.StudentSentMessages.ToList().Count;
@@ -170,6 +174,10 @@ namespace Rajinibon.Services
                     else if(sentType == SentType.Exit)
                     {
                         GlobalConfig.StudentCheckTimes = GetStudentsExitMySql(GlobalConfig.Date);
+                        if(GlobalConfig.StudentSentMessages.ToList().Count == 0)
+                        {
+                            return;
+                        }
                         GlobalConfig.StudentSentMessages.StudentStudentSentMessageFirstTime();
 
                         var diff = GlobalConfig.StudentCheckTimes.ToList().Count - GlobalConfig.StudentSentMessages.ToList().Count;

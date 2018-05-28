@@ -90,8 +90,8 @@ namespace Rajinibon
             {
                 var studentsEntry = _StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date).Result;
                 var studentsExit = _StudentService.GetStudentCheckTimesExit(GlobalConfig.Date).Result;
-                var diffEntry = _StudentService.GetStudentsEntryFromList(GlobalConfig.StudentCheckTimes).ToList().Count - _StudentService.GetStudentSentMessageEntryFromList(GlobalConfig.StudentSentMessages).ToList().Count;
-                var diffExit = _StudentService.GetStudentsExitFromList(GlobalConfig.StudentCheckTimes).ToList().Count - _StudentService.GetStudentSentMessageExitFromList(GlobalConfig.StudentSentMessages).ToList().Count;
+                //var diffEntry = _StudentService.GetStudentsEntryFromList(GlobalConfig.StudentCheckTimes).ToList().Count - _StudentService.GetStudentSentMessageEntryFromList(GlobalConfig.StudentSentMessages).ToList().Count;
+                //var diffExit = _StudentService.GetStudentsExitFromList(GlobalConfig.StudentCheckTimes).ToList().Count - _StudentService.GetStudentSentMessageExitFromList(GlobalConfig.StudentSentMessages).ToList().Count;
 
                 try
                 {
@@ -101,11 +101,8 @@ namespace Rajinibon
                         _StudentService.SaveStudentStudentCheckTime(studentsEntry.Item1);
                     }
 
-                    if (studentsEntry.Item1.ToList().Count > 0 || (diffEntry >= 0 && diffEntry <= 10))
-                    {
-                        // students entry sent time
-                        _StudentService.SentStudentNotifyMessage(studentsEntry.Item1, SentType.Entry);
-                    }
+                    // students entry sent time
+                    _StudentService.SentStudentNotifyMessage(studentsEntry.Item1, SentType.Entry);
 
                     if (studentsExit.Item1.ToList().Count > 0)
                     {
@@ -113,11 +110,8 @@ namespace Rajinibon
                         _StudentService.SaveStudentStudentCheckTime(studentsExit.Item1);
                     }
 
-                    if (studentsEntry.Item1.ToList().Count > 0 || (diffExit >= 0 && diffExit <= 10))
-                    {
-                        // students exit sent time
-                        _StudentService.SentStudentNotifyMessage(studentsExit.Item1, SentType.Exit);
-                    }
+                    // students exit sent time
+                    _StudentService.SentStudentNotifyMessage(studentsExit.Item1, SentType.Exit);
 
                 }
                 catch (Exception ex)
