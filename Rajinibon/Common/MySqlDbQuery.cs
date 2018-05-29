@@ -36,6 +36,23 @@ namespace Rajinibon.Common
             ";
         }
 
+        public static string GetStudentsSentMessageError()
+        {
+            return @"
+                select id Id, emp_id EmpId, sent_type SentType, status Status, sent_time SentTime, 
+                status Status, sent_time SentTime
+                from students_sent_message
+                where lower(status) <> 'success'
+            ";
+        }
+
+        public static string RemoveSentMessageError()
+        {
+            return @"
+                DELETE FROM students_sent_message
+                where lower(status) <> 'success'";
+        }
+
        
         public static string SaveStudentSentMessages()
         {

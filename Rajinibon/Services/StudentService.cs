@@ -145,58 +145,42 @@ namespace Rajinibon.Services
                 {
                     if(sentType == SentType.Entry)
                     {
+                        // get students checktime from databas
                         GlobalConfig.StudentCheckTimes = GetStudentsEntryMySql(GlobalConfig.Date);
-                        if (GlobalConfig.StudentSentMessages.ToList().Count == 0)
-                        {
-                            return;
-                        }
-                        GlobalConfig.StudentSentMessages.StudentStudentSentMessageFirstTime();
 
+                        // get students sent message from database
+                        GlobalConfig.StudentSentMessages = GetStudentsSentMessagesEntryFromMySql(GlobalConfig.CurrentDate);
+                                                
                         var diff = GlobalConfig.StudentCheckTimes.ToList().Count - GlobalConfig.StudentSentMessages.ToList().Count;
 
-                        if (diff >=0 && diff <= 10)
+                        if (diff != 0)
                         {
                             // get students sent message error
-                            var StudentSentMessagesError = GlobalConfig.StudentSentMessages.Where(s => s.Status.ToLower() != SentStatus.Success.ToString().ToLower());
+                            var StudentSentMessagesError = GlobalConfig.StudentCheckTimes.Where(s => !GlobalConfig.StudentSentMessages.Any(s2 => s.EmpId == s2.EmpId));
 
                             if (StudentSentMessagesError.ToList().Count == 0) { return; }
 
-                            // remove students sent message error from list
-                            GlobalConfig.StudentSentMessages.RemoveAll(s => s.Status.ToLower() != SentStatus.Success.ToString().ToLower());
-
-                            if (GlobalConfig.StudentSentMessages.ToList().Count == 0) { return; }
-
-                            var studentsSentMessageAgain = GlobalConfig.StudentCheckTimes.Where(s => !GlobalConfig.StudentSentMessages.Any(s2 => s.EmpId == s2.EmpId)).ToList();
-
-                            SentStudentNotifyMessage(studentsSentMessageAgain, sentType);
+                            SentStudentNotifyMessage(StudentSentMessagesError.Take(30), sentType);
                         }
                     }
                     else if(sentType == SentType.Exit)
                     {
+                        // get students checktime from databas
                         GlobalConfig.StudentCheckTimes = GetStudentsExitMySql(GlobalConfig.Date);
-                        if(GlobalConfig.StudentSentMessages.ToList().Count == 0)
-                        {
-                            return;
-                        }
-                        GlobalConfig.StudentSentMessages.StudentStudentSentMessageFirstTime();
+
+                        // get students sent message from database
+                        GlobalConfig.StudentSentMessages = GetStudentsSentMessagesExitFromMySql(GlobalConfig.CurrentDate);
 
                         var diff = GlobalConfig.StudentCheckTimes.ToList().Count - GlobalConfig.StudentSentMessages.ToList().Count;
 
-                        if (diff >= 0 && diff <= 10)
+                        if (diff != 0)
                         {
                             // get students sent message error
-                            var StudentSentMessagesError = GlobalConfig.StudentSentMessages.Where(s => s.Status.ToLower() != SentStatus.Success.ToString().ToLower());
+                            var StudentSentMessagesError = GlobalConfig.StudentCheckTimes.Where(s => !GlobalConfig.StudentSentMessages.Any(s2 => s.EmpId == s2.EmpId));
 
                             if (StudentSentMessagesError.ToList().Count == 0) { return; }
 
-                            // remove students sent message error from list
-                            GlobalConfig.StudentSentMessages.RemoveAll(s => s.Status.ToLower() != SentStatus.Success.ToString().ToLower());
-
-                            if (GlobalConfig.StudentSentMessages.ToList().Count == 0) { return; }
-
-                            var studentsSentMessageAgain = GlobalConfig.StudentCheckTimes.Where(s => !GlobalConfig.StudentSentMessages.Any(s2 => s.EmpId == s2.EmpId)).ToList();
-
-                            SentStudentNotifyMessage(studentsSentMessageAgain, sentType);
+                            SentStudentNotifyMessage(StudentSentMessagesError.Take(30), sentType);
                         }
                     }
 
@@ -241,7 +225,10 @@ namespace Rajinibon.Services
                                     SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
                                 };
                                 results.Add(model);
-                                GlobalConfig.StudentSentMessages.Add(model);
+                                //GlobalConfig.StudentSentMessages.Add(model);
+
+
+                                MySqlDataConnection.SaveStudentSentMessage(results);
                             }
                             else
                             {
@@ -252,10 +239,8 @@ namespace Rajinibon.Services
                                     SentType = sentType.ToString(),
                                     SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
                                 };
-                                GlobalConfig.StudentSentMessages.Add(model);
+                                //GlobalConfig.StudentSentMessages.Add(model);
                             }
-
-                            MySqlDataConnection.SaveStudentSentMessage(results);
                         }
                         else
                         {
@@ -266,7 +251,7 @@ namespace Rajinibon.Services
                                 SentType = sentType.ToString(),
                                 SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
                             };
-                            GlobalConfig.StudentSentMessages.Add(model);
+                            //GlobalConfig.StudentSentMessages.Add(model);
                         }
                     });
                 }
@@ -455,6 +440,149 @@ namespace Rajinibon.Services
             });
 
             return result;
+        }
+
+        public List<StudentSentMessage> GetStudentsSentMessagesEntryFromMySql(string date)
+        {
+            var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
+            var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
+
+            var result = MySqlDataConnection.GetStudentSentMessages(date, timeStart, timeEnd).Result.ToList();
+
+            return result;
+        }
+
+        public List<StudentSentMessage> GetStudentsSentMessagesExitFromMySql(string date)
+        {
+            var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
+            var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
+
+            var result = MySqlDataConnection.GetStudentSentMessages(date, timeStart, timeEnd).Result.ToList();
+
+            return result;
+        }
+
+        public void SentStudentsNotifyMessage(IEnumerable<StudentCheckTime> models, SentType sentType)
+        {
+            try
+            {
+                var url = GlobalConfig.AppSettings("sentMessageService")
+                .Replace("{schoolCode}", GlobalConfig.AppSettings("schoolCode"))
+                .Replace("{roleCode}", GlobalConfig.AppSettings("roleCode"));
+
+                foreach (var item in models)
+                {
+                    var client = new RestClient(url);
+                    var request = new RestRequest(Method.POST);
+                    request.AddBody("content-type", "application/form-data");
+
+                    request.AddParameter("students", "999902");
+                    request.AddParameter("message", $"ID: {item.EmpId} Name: {item.EmpName} {sentType.ToString()}: {item.ChkTime}");
+                    request.AddParameter("rooms", "");
+                    request.AddParameter("username", "0411");
+
+                    Thread.Sleep(100);
+
+                    client.ExecuteAsync(request, response =>
+                    {
+
+                        var data = response.Content;
+
+                        StudentSentMessage model = new StudentSentMessage();
+                        var json = response.Content;
+
+                        ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
+
+                        if (res != null)
+                        {
+                            if (res.success == "1")
+                            {
+                                model = new StudentSentMessage()
+                                {
+                                    EmpId = item.EmpId,
+                                    Status = $"{SentStatus.Success}",
+                                    SentType = sentType.ToString(),
+                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
+                                };
+
+                                MySqlDataConnection.SaveStudentSentMessage(model);
+                            }
+                            else
+                            {
+                                model = new StudentSentMessage()
+                                {
+                                    EmpId = item.EmpId,
+                                    Status = $"{SentStatus.Error} : {res.error}",
+                                    SentType = sentType.ToString(),
+                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
+                                };
+                                MySqlDataConnection.SaveStudentSentMessage(model);
+                            }
+                        }
+                        else
+                        {
+                            model = new StudentSentMessage()
+                            {
+                                EmpId = item.EmpId,
+                                Status = $"{SentStatus.Error}",
+                                SentType = sentType.ToString(),
+                                SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
+                            };
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveExceptionLog(ex).ConfigureAwait(false);
+            }
+            
+        }
+
+        public async Task<List<StudentCheckTime>> GetStudentCheckTimesEntryMySql(string date)
+        {
+            var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
+            var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
+
+            // get student entry from MySql
+            var studentsEntryDb = await MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
+
+            return studentsEntryDb.ToList();
+        }
+
+        public async Task<List<StudentCheckTime>> GetStudentCheckTimesExitMySql(string date)
+        {
+            var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
+            var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
+
+            var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
+
+            // get student entry from MySql
+            var studentsExitDb = await MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
+
+            return studentsExitDb.ToList();
+        }
+
+        public async Task RemoveSentMessageError()
+        {
+            await MySqlDataConnection.RemoveSentMessageError();
+        }
+
+        public async Task<List<StudentSentMessage>> GetStudentsSentMessageError()
+        {
+            var results = await MySqlDataConnection.GetStudentsSentMessageError();
+
+            return results;
         }
     }
 }

@@ -35,7 +35,29 @@ namespace Rajinibon.DataAccess
                 results = connection.QueryAsync<StudentSentMessage>(MySqlDbQuery.GetStudentSentMessagesByDate(), new { sent_time = date }).Result.ToList();
             }
 
+            if (bool.Parse(GlobalConfig.AppSettings("Test"))) { return results; }
+
             return results.GetStudentSentMessage(timeStart, timeEnd);
+        }
+
+        public async Task<List<StudentSentMessage>> GetStudentsSentMessageError()
+        {
+            var results = new List<StudentSentMessage>();
+            using (var connection = new MySqlConnection(connString))
+            {
+                await connection.OpenAsync();
+                results = connection.QueryAsync<StudentSentMessage>(MySqlDbQuery.GetStudentsSentMessageError()).Result.ToList();
+
+                return results;
+            }
+        }
+
+        public async Task RemoveSentMessageError()
+        {
+            using (var connection = new MySqlConnection(connString))
+            {
+                await connection.QueryAsync(MySqlDbQuery.RemoveSentMessageError());
+            }
         }
 
         public async Task RemoveStudentsCheckTimeLess(string date)
@@ -88,6 +110,21 @@ namespace Rajinibon.DataAccess
                 using (var connection = new MySqlConnection(connString))
                 {
                     connection.Execute(MySqlDbQuery.SaveStudentSentMessages(), models);
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveExceptionLog(ex).ConfigureAwait(false);
+            }
+        }
+
+        public void SaveStudentSentMessage(StudentSentMessage model)
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(connString))
+                {
+                    connection.Execute(MySqlDbQuery.SaveStudentSentMessages(), model);
                 }
             }
             catch (Exception ex)

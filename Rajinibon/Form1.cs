@@ -71,11 +71,12 @@ namespace Rajinibon
                         RunStudentsCheckTime();
                         //await RunStudentsSentMessage();
 
-                        Thread.Sleep(TimeSpan.FromSeconds(int.Parse(GlobalConfig.AppSettings("ThreadSleepTaskSec"))));
+                        Thread.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepTaskSec"))));
                     }
 
                     s.Stop();
                     //MessageBox.Show("Task Completed.");
+                    Environment.Exit(0);
                 }, null, timeToGo, Timeout.InfiniteTimeSpan);
             }
             catch (Exception ex)

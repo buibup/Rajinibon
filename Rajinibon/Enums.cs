@@ -17,4 +17,10 @@ namespace Rajinibon
         Success,
         Error
     }
+
+    public enum SentMethod
+    {
+        New,
+        Error
+    }
 }
