@@ -32,7 +32,7 @@ namespace Rajinibon.DataAccess
             using (var connection = new MySqlConnection(connString))
             {
                 await connection.OpenAsync();
-                results = connection.QueryAsync<StudentSentMessage>(MySqlDbQuery.GetStudentSentMessagesByDate(), new { sent_time = date }).Result.ToList();
+                results = connection.QueryAsync<StudentSentMessage>(MySqlDbQuery.GetStudentSentMessagesByDate(), new { chk_time = date }).Result.ToList();
             }
 
             if (bool.Parse(GlobalConfig.AppSettings("Test"))) { return results; }
@@ -72,7 +72,7 @@ namespace Rajinibon.DataAccess
         {
             using (var connection = new MySqlConnection(connString))
             {
-                await connection.QueryAsync(MySqlDbQuery.RemoveStudentsSentMessageLess(), new { sent_time = date });
+                await connection.QueryAsync(MySqlDbQuery.RemoveStudentsSentMessageLess(), new { chk_time = date });
             }
         }
 
@@ -146,6 +146,51 @@ namespace Rajinibon.DataAccess
             {
                 await SaveExceptionLog(ex);
             }
+        }
+
+        public bool SentSuccess(string empId, SentType sentType)
+        {
+            bool result = false;
+            try
+            {
+                using(var connection = new MySqlConnection(connString))
+                {
+                    var item = connection.Query<StudentSentMessage>(MySqlDbQuery.SentSuccess(), new { emp_id = empId }).ToList();
+                    var model = new StudentSentMessage();
+
+                    if(sentType == SentType.Entry)
+                    {
+                        var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
+                        var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
+
+                        var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
+                        var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
+
+                        model = item.GetStudentSentMessage(timeStart, timeEnd).FirstOrDefault();
+                    }
+                    else if(sentType == SentType.Exit)
+                    {
+                        var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
+                        var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
+
+                        var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
+                        var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
+
+                        model = item.GetStudentSentMessage(timeStart, timeEnd).FirstOrDefault();
+                    }
+                    if(model != null)
+                    {
+                        result = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveExceptionLog(ex).ConfigureAwait(false);
+                result = false;
+            }
+
+            return result;
         }
     }
 }

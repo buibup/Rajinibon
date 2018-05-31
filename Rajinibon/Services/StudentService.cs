@@ -487,17 +487,20 @@ namespace Rajinibon.Services
                     request.AddParameter("rooms", "");
                     request.AddParameter("username", "0411");
 
-                    Thread.Sleep(100);
+                    if(MySqlDataConnection.SentSuccess(item.EmpId, sentType))
+                    {
+                        continue;
+                    }
+
+                    Thread.Sleep(1500);
 
                     client.ExecuteAsync(request, response =>
                     {
-
-                        var data = response.Content;
-
                         StudentSentMessage model = new StudentSentMessage();
                         var json = response.Content;
 
                         ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
+
 
                         if (res != null)
                         {
@@ -508,7 +511,8 @@ namespace Rajinibon.Services
                                     EmpId = item.EmpId,
                                     Status = $"{SentStatus.Success}",
                                     SentType = sentType.ToString(),
-                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
+                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
+                                    ChkTime = item.ChkTime
                                 };
 
                                 MySqlDataConnection.SaveStudentSentMessage(model);
@@ -520,7 +524,8 @@ namespace Rajinibon.Services
                                     EmpId = item.EmpId,
                                     Status = $"{SentStatus.Error} : {res.error}",
                                     SentType = sentType.ToString(),
-                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
+                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
+                                    ChkTime = item.ChkTime
                                 };
                                 MySqlDataConnection.SaveStudentSentMessage(model);
                             }
@@ -532,7 +537,8 @@ namespace Rajinibon.Services
                                 EmpId = item.EmpId,
                                 Status = $"{SentStatus.Error}",
                                 SentType = sentType.ToString(),
-                                SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss"))
+                                SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
+                                ChkTime = item.ChkTime
                             };
                         }
                     });

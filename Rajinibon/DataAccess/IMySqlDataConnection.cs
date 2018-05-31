@@ -20,5 +20,6 @@ namespace Rajinibon.DataAccess
         Task RemoveStudentsCheckTimeLess(string date);
         Task RemoveStudentsSentMessageLess(string date);
         Task RemoveSentMessageError();
+        bool SentSuccess(string empId, SentType sentType);
     }
 }

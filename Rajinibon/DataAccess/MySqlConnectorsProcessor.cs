@@ -42,17 +42,18 @@ namespace Rajinibon.DataAccess
 
             foreach (var item in models)
             {
-                var sentTime = item.SentTime;
-                var time = new TimeSpan(sentTime.Hour, sentTime.Minute, sentTime.Millisecond);
+                var chkTime = item.ChkTime;
+                var time = new TimeSpan(chkTime.Hour, chkTime.Minute, chkTime.Millisecond);
 
                 if (time.IsBetween(timeStart, timeEnd))
                 {
                     var model = new StudentSentMessage()
                     {
+                        EmpId = item.EmpId,
                         Status = item.Status,
                         SentType = item.SentType,
                         SentTime = item.SentTime,
-
+                        ChkTime = item.ChkTime
                     };
 
                     results.Add(model);

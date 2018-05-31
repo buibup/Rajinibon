@@ -29,18 +29,16 @@ namespace Rajinibon.Common
         public static string GetStudentSentMessagesByDate()
         {
             return @"
-                SELECT id Id, emp_id EmpId, sent_type SentType, status Status, sent_time SentTime, 
-                status Status, sent_time SentTime
+                SELECT id Id, emp_id EmpId, sent_type SentType, status Status, sent_time SentTime, chk_time ChkTime
                 FROM students_sent_message
-                where date(sent_time) = ?
+                where date(chk_time) = ?
             ";
         }
 
         public static string GetStudentsSentMessageError()
         {
             return @"
-                select id Id, emp_id EmpId, sent_type SentType, status Status, sent_time SentTime, 
-                status Status, sent_time SentTime
+                select id Id, emp_id EmpId, sent_type SentType, status Status, sent_time SentTime, chk_time ChkTime
                 from students_sent_message
                 where lower(status) <> 'success'
             ";
@@ -57,9 +55,9 @@ namespace Rajinibon.Common
         public static string SaveStudentSentMessages()
         {
             return @"
-                INSERT INTO rajinibon.students_sent_message
-                (emp_id, sent_type, status, sent_time)
-                VALUES(?EmpId, ?SentType, ?Status, ?SentTime);
+                INSERT INTO students_sent_message
+                (emp_id, sent_type, status, sent_time, chk_time)
+                VALUES(?EmpId, ?SentType, ?Status, ?SentTime, ?ChkTime);
             ";
         }
 
@@ -84,7 +82,16 @@ namespace Rajinibon.Common
         {
             return @"
                 DELETE FROM students_sent_message
-                WHERE date(sent_time) < ?
+                WHERE date(chk_time) < ?
+            ";
+        }
+
+        public static string SentSuccess()
+        {
+            return @"
+                select id Id, emp_id EmpId, sent_type SentType, status Status, sent_time SentTime, chk_time ChkTime
+                from students_sent_message
+                where lower(status) = 'success' and emp_id = ?
             ";
         }
     }

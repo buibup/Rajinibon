@@ -59,7 +59,10 @@ namespace Rajinibon.Task
                         var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).Result.ToList();
                         var studentsSentMessageEntry = studentService.GetStudentSentMessageEntryAsync(GlobalConfig.CurrentDate).Result.ToList();
                         var studentsSentMessageExit = studentService.GetStudentSentMessageExitAsync(GlobalConfig.CurrentDate).Result.ToList();
-                        SentMessageError(studentsCheckTimeEntry, studentsCheckTimeExit, studentsSentMessageEntry, studentsSentMessageExit);
+                        SentMessageError(studentsCheckTimeEntry, 
+                            studentsCheckTimeExit, 
+                            studentsSentMessageEntry.Where(std => std.Status.ToLower() == "success").ToList(), 
+                            studentsSentMessageExit.Where(std => std.Status.ToLower() == "success").ToList());
 
                         // delay of task
                         Thread.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepTaskSec"))));
@@ -109,24 +112,24 @@ namespace Rajinibon.Task
             List<StudentSentMessage> studentSentMessagesEntry,
             List<StudentSentMessage> studentSentMessagesExit)
         {
-            if(studentCheckTimesEntry.Count == 0 && studentCheckTimesExit.Count == 0) { return; }
+            //if(studentCheckTimesEntry.Count == 0 && studentCheckTimesExit.Count == 0) { return; }
 
-            if(studentCheckTimesEntry.Count == studentSentMessagesEntry.Count)
+            if(studentCheckTimesEntry.Count != studentSentMessagesEntry.Count)
             {
-                var studentsSentMessageError = studentService.GetStudentsSentMessageError().Result.ToList();
-                studentService.RemoveSentMessageError();
+                //var studentsSentMessageError = studentService.GetStudentsSentMessageError().Result.ToList();
+                //studentService.RemoveSentMessageError();
 
-                var studentsSentMessage = studentCheckTimesEntry.Where(s => studentsSentMessageError.Any(s2 => s.EmpId == s2.EmpId)).ToList();
+                var studentsSentMessage = studentCheckTimesEntry.Where(s => !studentSentMessagesEntry.Any(s2 => s.EmpId == s2.EmpId)).ToList();
 
                 RunStudentsCheckTime(studentsSentMessage, new List<StudentCheckTime>(), SentMethod.Error);
             }
 
-            if (studentCheckTimesExit.Count == studentSentMessagesExit.Count)
+            if (studentCheckTimesExit.Count != studentSentMessagesExit.Count)
             {
-                var studentsSentMessageError = studentService.GetStudentsSentMessageError().Result.ToList();
-                studentService.RemoveSentMessageError();
+                //var studentsSentMessageError = studentService.GetStudentsSentMessageError().Result.ToList();
+                //studentService.RemoveSentMessageError();
 
-                var studentsSentMessage = studentCheckTimesExit.Where(s => studentsSentMessageError.Any(s2 => s.EmpId == s2.EmpId)).ToList();
+                var studentsSentMessage = studentCheckTimesExit.Where(s => !studentSentMessagesExit.Any(s2 => s.EmpId == s2.EmpId)).ToList();
 
                 RunStudentsCheckTime(new List<StudentCheckTime>(), studentsSentMessage, SentMethod.Error);
             }

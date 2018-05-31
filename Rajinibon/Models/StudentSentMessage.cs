@@ -9,5 +9,6 @@ namespace Rajinibon.Models
         public string Status { get; set; }
         public string SentType { get; set; }
         public DateTime SentTime { get; set; }
+        public DateTime ChkTime { get; set; }
     }
 }
