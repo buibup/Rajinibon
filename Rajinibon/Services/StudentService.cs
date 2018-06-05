@@ -278,11 +278,11 @@ namespace Rajinibon.Services
 
         public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageExitAsync(string date)
         {
-            var entryStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
-            var entryEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
+            var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
+            var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
 
-            var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
-            var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
+            var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
+            var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
 
             // get student sent message entry from MySql
             var studentsSentMessagesExitDb = await MySqlDataConnection.GetStudentSentMessages(date.GetDate(), timeStart, timeEnd);

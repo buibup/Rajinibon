@@ -35,8 +35,6 @@ namespace Rajinibon.DataAccess
                 results = connection.QueryAsync<StudentSentMessage>(MySqlDbQuery.GetStudentSentMessagesByDate(), new { chk_time = date }).Result.ToList();
             }
 
-            if (bool.Parse(GlobalConfig.AppSettings("Test"))) { return results; }
-
             return results.GetStudentSentMessage(timeStart, timeEnd);
         }
 
