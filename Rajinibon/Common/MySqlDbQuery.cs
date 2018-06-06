@@ -56,8 +56,8 @@ namespace Rajinibon.Common
         {
             return @"
                 INSERT INTO students_sent_message
-                (emp_id, sent_type, status, sent_time, chk_time)
-                VALUES(?EmpId, ?SentType, ?Status, ?SentTime, ?ChkTime);
+                (emp_id, sent_type, status, chk_time, sent_time )
+                VALUES(?EmpId, ?SentType, ?Status, ?ChkTime, ?SentTime );
             ";
         }
 

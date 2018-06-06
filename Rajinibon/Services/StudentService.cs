@@ -530,17 +530,6 @@ namespace Rajinibon.Services
                                 MySqlDataConnection.SaveStudentSentMessage(model);
                             }
                         }
-                        else
-                        {
-                            model = new StudentSentMessage()
-                            {
-                                EmpId = item.EmpId,
-                                Status = $"{SentStatus.Error}",
-                                SentType = sentType.ToString(),
-                                SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
-                                ChkTime = item.ChkTime
-                            };
-                        }
                     });
                 }
             }
