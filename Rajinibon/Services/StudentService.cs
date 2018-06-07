@@ -472,27 +472,33 @@ namespace Rajinibon.Services
         {
             try
             {
+                var studentsAddPara = GlobalConfig.AppSettings("students");
+                var roomsAddPara = GlobalConfig.AppSettings("rooms");
+                var messageAddPara = GlobalConfig.AppSettings("message");
+                var usernameAddPara = GlobalConfig.AppSettings("username");
+
                 var url = GlobalConfig.AppSettings("sentMessageService")
                 .Replace("{schoolCode}", GlobalConfig.AppSettings("schoolCode"))
                 .Replace("{roleCode}", GlobalConfig.AppSettings("roleCode"));
 
                 foreach (var item in models)
                 {
-                    var client = new RestClient(url);
-                    var request = new RestRequest(Method.POST);
-                    request.AddBody("content-type", "application/form-data");
-
-                    request.AddParameter("students", "999902");
-                    request.AddParameter("message", $"ID: {item.EmpId} Name: {item.EmpName} {sentType.ToString()}: {item.ChkTime}");
-                    request.AddParameter("rooms", "");
-                    request.AddParameter("username", "0411");
-
-                    if(MySqlDataConnection.SentSuccess(item.EmpId, sentType))
+                    if (MySqlDataConnection.SentSuccess(item.EmpId, sentType))
                     {
                         continue;
                     }
 
-                    Thread.Sleep(1500);
+                    var studentsReq = studentsAddPara == "999902" ? studentsAddPara : item.EmpId;
+                    var client = new RestClient(url);
+                    var request = new RestRequest(Method.POST);
+                    request.AddBody("content-type", "application/form-data");
+
+                    request.AddParameter("students", studentsReq);
+                    request.AddParameter("message", $"ID: {item.EmpId} Name: {item.EmpName} {sentType.ToString()}: {item.ChkTime}");
+                    request.AddParameter("rooms", roomsAddPara);
+                    request.AddParameter("username", usernameAddPara);
+
+                    Thread.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
 
                     client.ExecuteAsync(request, response =>
                     {
