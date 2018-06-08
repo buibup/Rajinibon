@@ -494,7 +494,7 @@ namespace Rajinibon.Services
                     request.AddBody("content-type", "application/form-data");
 
                     request.AddParameter("students", studentsReq);
-                    request.AddParameter("message", $"ID: {item.EmpId} Name: {item.EmpName} {sentType.ToString()}: {item.ChkTime}");
+                    request.AddParameter("message", $"Name: {item.EmpName} {sentType.ToString()}: {item.ChkTime}");
                     request.AddParameter("rooms", roomsAddPara);
                     request.AddParameter("username", usernameAddPara);
 
