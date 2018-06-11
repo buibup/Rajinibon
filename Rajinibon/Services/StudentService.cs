@@ -493,8 +493,38 @@ namespace Rajinibon.Services
                     var request = new RestRequest(Method.POST);
                     request.AddBody("content-type", "application/form-data");
 
+                    #region message
+                    //entry
+                    //ทดสอบ
+                    //รหัสนักเรียน
+                    //ชื่อ
+                    //เวลาเข้าเรียน
+
+                    //exit
+                    //ทดสอบ
+                    //รหัสนักเรียน
+                    //ชื่อ
+                    //เวลาเลิกเรียน
+                    #endregion
+
                     request.AddParameter("students", studentsReq);
-                    request.AddParameter("message", $"Name: {item.EmpName} {sentType.ToString()}: {item.ChkTime}");
+                    if(sentType == SentType.Entry)
+                    {
+                        request.AddParameter("message",
+                        $"ทดสอบ" + System.Environment.NewLine +
+                        $"รหัสนักเรียน: {item.EmpId}" + System.Environment.NewLine +
+                        $"ชื่อ: {item.EmpName}" + System.Environment.NewLine +
+                        $"เวลาเข้าเรียน: {item.ChkTime}");
+                    }
+                    else if(sentType == SentType.Exit)
+                    {
+                        request.AddParameter("message",
+                        $"ทดสอบ" + System.Environment.NewLine +
+                        $"รหัสนักเรียน: {item.EmpId}" + System.Environment.NewLine +
+                        $"ชื่อ: {item.EmpName}" + System.Environment.NewLine +
+                        $"เวลาเลิกเรียน: {item.ChkTime}");
+                    }
+
                     request.AddParameter("rooms", roomsAddPara);
                     request.AddParameter("username", usernameAddPara);
 
