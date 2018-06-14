@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rajinibon", "Rajinibon\Raji
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rajinibon.Task", "Rajinibon.Task\Rajinibon.Task.csproj", "{147D0BAE-C094-4BBC-A467-6B07986D2BC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rajinibon.SentMessage", "Rajinibon.SentMessage\Rajinibon.SentMessage.csproj", "{93D0CDD3-F764-43D9-9217-A11366E1DD2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{147D0BAE-C094-4BBC-A467-6B07986D2BC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{147D0BAE-C094-4BBC-A467-6B07986D2BC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{147D0BAE-C094-4BBC-A467-6B07986D2BC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93D0CDD3-F764-43D9-9217-A11366E1DD2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93D0CDD3-F764-43D9-9217-A11366E1DD2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93D0CDD3-F764-43D9-9217-A11366E1DD2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93D0CDD3-F764-43D9-9217-A11366E1DD2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
