@@ -28,7 +28,12 @@ namespace Rajinibon.Task
             var startTime = DateTime.Now.TimeOfDay;
             var endTime = new TimeSpan(int.Parse(timeEndConfig[0]), int.Parse(timeEndConfig[1]), int.Parse(timeEndConfig[2]));
 
+            // save check time
             RunTask(startTime, endTime);
+
+            //sent message
+            RunSentMessage(startTime, endTime);
+
             Console.WriteLine($"Task sent message proccessing...");
             Console.ReadLine();
         }
@@ -55,14 +60,16 @@ namespace Rajinibon.Task
                         var studentsExit = studentService.GetStudentCheckTimesExit(GlobalConfig.Date).Result;
                         RunStudentsCheckTime(studentsEntry.Item1, studentsExit.Item1, SentMethod.New);
 
-                        var studentsCheckTimeEntry = studentService.GetStudentCheckTimesEntryMySql(GlobalConfig.Date).Result.ToList();
-                        var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).Result.ToList();
-                        var studentsSentMessageEntry = studentService.GetStudentSentMessageEntryAsync(GlobalConfig.CurrentDate).Result.ToList();
-                        var studentsSentMessageExit = studentService.GetStudentSentMessageExitAsync(GlobalConfig.CurrentDate).Result.ToList();
-                        SentMessageError(studentsCheckTimeEntry, 
-                            studentsCheckTimeExit, 
-                            studentsSentMessageEntry.Where(std => std.Status.ToLower() == "success").ToList(), 
-                            studentsSentMessageExit.Where(std => std.Status.ToLower() == "success").ToList());
+                        #region sent message
+                        //var studentsCheckTimeEntry = studentService.GetStudentCheckTimesEntryMySql(GlobalConfig.Date).Result.ToList();
+                        //var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).Result.ToList();
+                        //var studentsSentMessageEntry = studentService.GetStudentSentMessageEntryAsync(GlobalConfig.CurrentDate).Result.ToList();
+                        //var studentsSentMessageExit = studentService.GetStudentSentMessageExitAsync(GlobalConfig.CurrentDate).Result.ToList();
+                        //SentMessageError(studentsCheckTimeEntry, 
+                        //    studentsCheckTimeExit, 
+                        //    studentsSentMessageEntry.Where(std => std.Status.ToLower() == "success").ToList(), 
+                        //    studentsSentMessageExit.Where(std => std.Status.ToLower() == "success").ToList());
+                        #endregion
 
                         // sleep of thread
                         Thread.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepTaskSec"))));
@@ -91,7 +98,7 @@ namespace Rajinibon.Task
                 }
 
                 // sent message entry
-                studentService.SentStudentsNotifyMessage(studentCheckTimesEntry, SentType.Entry);
+                //studentService.SentStudentsNotifyMessage(studentCheckTimesEntry, SentType.Entry);
             }
             if (studentCheckTimesExit.Count > 0)
             {
@@ -102,7 +109,7 @@ namespace Rajinibon.Task
                 }
 
                 // sent message exit
-                studentService.SentStudentsNotifyMessage(studentCheckTimesExit, SentType.Exit);
+                //studentService.SentStudentsNotifyMessage(studentCheckTimesExit, SentType.Exit);
             }
         }
 
@@ -125,6 +132,52 @@ namespace Rajinibon.Task
                 var studentsSentMessageExit = studentCheckTimesExit.Where(s => !studentSentMessagesExit.Any(s2 => s.EmpId == s2.EmpId)).ToList();
 
                 RunStudentsCheckTime(new List<StudentCheckTime>(), studentsSentMessageExit, SentMethod.Error);
+            }
+        }
+
+        private static void RunSentMessage(TimeSpan startTime, TimeSpan endTime)
+        {
+            try
+            {
+                DateTime current = DateTime.Now;
+                TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
+                if (timeToGo < TimeSpan.Zero)
+                {
+                    return;//time already passed
+                }
+                timer = new System.Threading.Timer(x =>
+                {
+                    Stopwatch s = new Stopwatch();
+                    s.Start();
+
+                    while (startTime + s.Elapsed <= endTime)
+                    {
+                        double sentTimeEntry = 0;
+                        double sentTimeExit = 0;
+
+                        var studentsCheckTimeEntry = studentService.GetStudentCheckTimesEntryMySql(GlobalConfig.Date).Result.ToList();
+                        var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).Result.ToList();
+
+                        if(studentsCheckTimeEntry.Count > 0)
+                        {
+
+                            Thread.Sleep(TimeSpan.FromSeconds(sentTimeEntry * 2));
+                        }
+
+                        if (studentsCheckTimeExit.Count > 0)
+                        {
+                            Thread.Sleep(TimeSpan.FromSeconds(sentTimeExit * 2));
+                        }
+
+                        //.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
+                    }
+                    s.Stop();
+                    Environment.Exit(0);
+                }, null, timeToGo, Timeout.InfiniteTimeSpan);
+            }
+            catch (Exception ex)
+            {
+                studentService.SaveExceptionLog(ex);
             }
         }
     }
