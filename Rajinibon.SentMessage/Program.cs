@@ -34,82 +34,65 @@ namespace Rajinibon.SentMessage
         private static System.Threading.Timer timer;
         private static void RunSentMessage(TimeSpan startTime, TimeSpan endTime)
         {
-            try
-            {
+            //try
+            //{
 
-                //DateTime current = DateTime.Now;
-                //TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
-                //if (timeToGo < TimeSpan.Zero)
-                //{
-                //    return;//time already passed
-                //}
-                //timer = new System.Threading.Timer(x =>
-                //{
-                var currentTime = DateTime.Now.TimeOfDay;
-                //Stopwatch s = new Stopwatch();
-                //s.Start();
+            //DateTime current = DateTime.Now;
+            //TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
+            //if (timeToGo < TimeSpan.Zero)
+            //{
+            //    return;//time already passed
+            //}
+            //timer = new System.Threading.Timer(x =>
+            //{
+            var currentTime = DateTime.Now.TimeOfDay;
+            //Stopwatch s = new Stopwatch();
+            //s.Start();
 
-                // startTime and currentTime <= endTime
-                while (currentTime >= startTime && currentTime <= endTime)
-                {
-                    try
-                    {
-                        /** Process sent student message
-                    * 1. get all student check time 
-                    * 2. loop sent each student every 2 sec (count students * 2 then use for sleep thead)
-                    * 3. check error students
-                    * 4. sent error students
-                   */
-
-                        #region 1.ดึงข้อมูลนักเรียนที่ไม่เคยส่งข้อความในช่วงเวลานั้นๆ
-                        // get all student
-                        var studentsCheckTimeEntry = studentService.GetStudentCheckTimesEntryMySql(GlobalConfig.Date).Result.ToList();
-                        var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).Result.ToList();
-
-                        // get all student sent message
-                        var studentsSentMessageEntry = studentService.GetStudentSentMessageEntryAsync(GlobalConfig.CurrentDate).Result.ToList();
-                        var studentsSentMessageExit = studentService.GetStudentSentMessageExitAsync(GlobalConfig.CurrentDate).Result.ToList();
-
-                        // get all student sent message and success
-                        var studentsSuccessEntry = studentsSentMessageEntry.Where(std => std.Status.ToLower() == "success").ToList();
-                        var studentsSuccessExit = studentsSentMessageExit.Where(std => std.Status.ToLower() == "success").ToList();
-
-                        // get student for sent message
-                        var studentsForSentMsgEntry = studentsCheckTimeEntry.Where(std => !studentsSuccessEntry.Any(std2 => std.EmpId == std2.EmpId)).ToList();
-                        var studentsForSentMsgExit = studentsCheckTimeExit.Where(std => !studentsSuccessExit.Any(std2 => std.EmpId == std2.EmpId)).ToList();
-                        #endregion
-
-                        if (studentsForSentMsgEntry.Count > 0)
-                        {
-                            // sent message entry
-                            studentService.SentStudentsNotifyMessage(studentsForSentMsgEntry, SentType.Entry);
-                        }
-
-                        if (studentsForSentMsgExit.Count > 0)
-                        {
-                            // sent message exit
-                            studentService.SentStudentsNotifyMessage(studentsForSentMsgEntry, SentType.Exit);
-                        }
-
-                        Thread.Sleep(TimeSpan.FromSeconds(2));
-                        currentTime = DateTime.Now.TimeOfDay;
-                    }
-                    catch (Exception exApp)
-                    {
-                        // show exception on console
-                        Console.WriteLine(exApp.Message.ToString());
-                        Console.ReadLine();
-                    }
-                }
-                //s.Stop();
-                //Environment.Exit(0);
-                //}, null, 0, Timeout.InfiniteTimeSpan);
-            }
-            catch (Exception ex)
+            // startTime and currentTime <= endTime
+            while (currentTime >= startTime && currentTime <= endTime)
             {
                 try
                 {
-                    studentService.SaveExceptionLog(ex);
+                    /** Process sent student message
+                * 1. get all student check time 
+                * 2. loop sent each student every 2 sec (count students * 2 then use for sleep thead)
+                * 3. check error students
+                * 4. sent error students
+               */
+
+                    #region 1.ดึงข้อมูลนักเรียนที่ไม่เคยส่งข้อความในช่วงเวลานั้นๆ
+                    // get all student
+                    var studentsCheckTimeEntry = studentService.GetStudentCheckTimesEntryMySql(GlobalConfig.Date).Result.ToList();
+                    var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).Result.ToList();
+
+                    // get all student sent message
+                    var studentsSentMessageEntry = studentService.GetStudentSentMessageEntryAsync(GlobalConfig.CurrentDate).Result.ToList();
+                    var studentsSentMessageExit = studentService.GetStudentSentMessageExitAsync(GlobalConfig.CurrentDate).Result.ToList();
+
+                    // get all student sent message and success
+                    var studentsSuccessEntry = studentsSentMessageEntry.Where(std => std.Status.ToLower() == "success").ToList();
+                    var studentsSuccessExit = studentsSentMessageExit.Where(std => std.Status.ToLower() == "success").ToList();
+
+                    // get student for sent message
+                    var studentsForSentMsgEntry = studentsCheckTimeEntry.Where(std => !studentsSuccessEntry.Any(std2 => std.EmpId == std2.EmpId)).ToList();
+                    var studentsForSentMsgExit = studentsCheckTimeExit.Where(std => !studentsSuccessExit.Any(std2 => std.EmpId == std2.EmpId)).ToList();
+                    #endregion
+
+                    if (studentsForSentMsgEntry.Count > 0)
+                    {
+                        // sent message entry
+                        studentService.SentStudentsNotifyMessage(studentsForSentMsgEntry, SentType.Entry);
+                    }
+
+                    if (studentsForSentMsgExit.Count > 0)
+                    {
+                        // sent message exit
+                        studentService.SentStudentsNotifyMessage(studentsForSentMsgEntry, SentType.Exit);
+                    }
+
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+
                 }
                 catch (Exception exApp)
                 {
@@ -117,7 +100,25 @@ namespace Rajinibon.SentMessage
                     Console.WriteLine(exApp.Message.ToString());
                     Console.ReadLine();
                 }
+                currentTime = DateTime.Now.TimeOfDay;
             }
+            //s.Stop();
+            //Environment.Exit(0);
+            //}, null, 0, Timeout.InfiniteTimeSpan);
+            //}
+            //catch (Exception ex)
+            //{
+            //    try
+            //    {
+            //        studentService.SaveExceptionLog(ex);
+            //    }
+            //    catch (Exception exApp)
+            //    {
+            //        // show exception on console
+            //        Console.WriteLine(exApp.Message.ToString());
+            //        Console.ReadLine();
+            //    }
+            //}
         }
     }
 }
