@@ -23,10 +23,10 @@ namespace Rajinibon.Services
             MySqlDataConnection = new MySqlConnectors();
         }
 
-        public async Task<Tuple<List<StudentCheckTime>, List<StudentCheckTime>>> GetStudentCheckTimesEntry(string date)
+        public Tuple<List<StudentCheckTime>, List<StudentCheckTime>> GetStudentCheckTimesEntry(string date)
         {
 
-            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
+            var data = DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
 
             if (data.ToList().Count == 0)
             {
@@ -42,10 +42,10 @@ namespace Rajinibon.Services
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
             // get student entry from dbf file
-            var studentsEntryDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
+            var studentsEntryDbf = GetStudentCheckTimes(data, timeStart, timeEnd);
 
             // get student entry from MySql
-            var studentsEntryDb = await MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
+            var studentsEntryDb = MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
 
             // get diff between dbf and mysql
             var studentsEntry = studentsEntryDbf.Where(s => !studentsEntryDb.Any(s2 => s2.EmpId == s.EmpId));
@@ -53,9 +53,9 @@ namespace Rajinibon.Services
             return Tuple.Create(studentsEntry.StudentCheckTimesFirstTime(), studentsEntryDbf.StudentCheckTimesFirstTime());
         }
 
-        public async Task<Tuple<List<StudentCheckTime>, List<StudentCheckTime>>> GetStudentCheckTimesExit(string date)
+        public Tuple<List<StudentCheckTime>, List<StudentCheckTime>> GetStudentCheckTimesExit(string date)
         {
-            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
+            var data = DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
 
             if (data.ToList().Count == 0)
             {
@@ -71,10 +71,10 @@ namespace Rajinibon.Services
             var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
 
             // get student exit from dbf file
-            var studentsExitDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
+            var studentsExitDbf = GetStudentCheckTimes(data, timeStart, timeEnd);
 
             // get student entry from MySql
-            var studentsExitDb = await MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
+            var studentsExitDb = MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
 
             // get diff between dbf and mysql
             var studentsExit = studentsExitDbf.Where(s => !studentsExitDb.Any(s2 => s2.EmpId == s.EmpId));
@@ -82,46 +82,43 @@ namespace Rajinibon.Services
             return Tuple.Create(studentsExit.StudentCheckTimesFirstTime(), studentsExitDbf.StudentCheckTimesFirstTime());
         }
 
-        public async Task RemoveStudentsLess(string date)
+        public void RemoveStudentsLess(string date)
         {
-            await MySqlDataConnection.RemoveStudentsCheckTimeLess(date);
-            await MySqlDataConnection.RemoveStudentsSentMessageLess(date);
+            MySqlDataConnection.RemoveStudentsCheckTimeLess(date);
+            MySqlDataConnection.RemoveStudentsSentMessageLess(date);
         }
 
-        public async Task SaveStudentStudentCheckTime(IEnumerable<StudentCheckTime> models)
+        public void SaveStudentStudentCheckTime(IEnumerable<StudentCheckTime> models)
         {
-            await MySqlDataConnection.SaveStudentCheckTimes(models);
+            MySqlDataConnection.SaveStudentCheckTimes(models);
         }
 
-        public Task SaveStudentSentMessage(IEnumerable<StudentCheckTime> models)
+        public void SaveStudentSentMessage(IEnumerable<StudentCheckTime> models)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(IEnumerable<StudentCheckTime> models, TimeSpan timeStart, TimeSpan timeEnd)
+        public IEnumerable<StudentCheckTime> GetStudentCheckTimes(IEnumerable<StudentCheckTime> models, TimeSpan timeStart, TimeSpan timeEnd)
         {
             var result = new List<StudentCheckTime>();
 
-            await Task.Run(() =>
+            foreach (var item in models)
             {
-                foreach (var item in models)
-                {
-                    var chkTime = item.ChkTime;
-                    var time = new TimeSpan(chkTime.Hour, chkTime.Minute, chkTime.Millisecond);
+                var chkTime = item.ChkTime;
+                var time = new TimeSpan(chkTime.Hour, chkTime.Minute, chkTime.Millisecond);
 
-                    if (time.IsBetween(timeStart, timeEnd))
+                if (time.IsBetween(timeStart, timeEnd))
+                {
+                    var model = new StudentCheckTime()
                     {
-                        var model = new StudentCheckTime()
-                        {
-                            CuserId = item.CuserId,
-                            EmpId = item.EmpId,
-                            EmpName = item.EmpName,
-                            ChkTime = chkTime
-                        };
-                        result.Add(model);
-                    }
+                        CuserId = item.CuserId,
+                        EmpId = item.EmpId,
+                        EmpName = item.EmpName,
+                        ChkTime = chkTime
+                    };
+                    result.Add(model);
                 }
-            });
+            }
 
             return result;
         }
@@ -258,7 +255,7 @@ namespace Rajinibon.Services
             }
             catch (Exception ex)
             {
-                SaveExceptionLog(ex).ConfigureAwait(false);
+                SaveExceptionLog(ex);
             }
         }
 
@@ -290,9 +287,9 @@ namespace Rajinibon.Services
             return studentsSentMessagesExitDb;
         }
 
-        public async Task SaveExceptionLog(Exception ex)
+        public void SaveExceptionLog(Exception ex)
         {
-            await MySqlDataConnection.SaveExceptionLog(ex);
+            MySqlDataConnection.SaveExceptionLog(ex);
         }
 
         public bool SentMessageSuccess(IEnumerable<StudentCheckTime> models, SentType sentType)
@@ -300,9 +297,9 @@ namespace Rajinibon.Services
             throw new NotImplementedException();
         }
 
-        public async Task<List<StudentCheckTime>> GetStudentsEntryDbf(string date)
+        public List<StudentCheckTime> GetStudentsEntryDbf(string date)
         {
-            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
+            var data = DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
 
             if (date.ToList().Count == 0) { return new List<StudentCheckTime>(); }
 
@@ -313,14 +310,14 @@ namespace Rajinibon.Services
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
             // get student entry from dbf file
-            var studentsEntryDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
+            var studentsEntryDbf = GetStudentCheckTimes(data, timeStart, timeEnd);
 
             return studentsEntryDbf.StudentCheckTimesFirstTime();
         }
 
-        public async Task<List<StudentCheckTime>> GetStudentsExitDbf(string date)
+        public List<StudentCheckTime> GetStudentsExitDbf(string date)
         {
-            var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
+            var data = DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
 
             if (date.ToList().Count == 0) { return new List<StudentCheckTime>(); }
 
@@ -331,7 +328,7 @@ namespace Rajinibon.Services
             var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
 
             // get student exit from dbf file
-            var studentsExitDbf = await GetStudentCheckTimes(data, timeStart, timeEnd);
+            var studentsExitDbf = GetStudentCheckTimes(data, timeStart, timeEnd);
 
             return studentsExitDbf.StudentCheckTimesFirstTime();
         }
@@ -344,7 +341,7 @@ namespace Rajinibon.Services
             var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
-            var result = MySqlDataConnection.GetStudentCheckTimes(date, timeStart, timeEnd).Result.ToList();
+            var result = MySqlDataConnection.GetStudentCheckTimes(date, timeStart, timeEnd).ToList();
 
             return result;
         }
@@ -357,7 +354,7 @@ namespace Rajinibon.Services
             var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
 
-            var result = MySqlDataConnection.GetStudentCheckTimes(date, timeStart, timeEnd).Result.ToList();
+            var result = MySqlDataConnection.GetStudentCheckTimes(date, timeStart, timeEnd).ToList();
 
             return result;
         }
@@ -370,7 +367,7 @@ namespace Rajinibon.Services
             var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
-            var result = GetStudentCheckTimes(models, timeStart, timeEnd).Result.ToList();
+            var result = GetStudentCheckTimes(models, timeStart, timeEnd).ToList();
 
             return result;
         }
@@ -383,7 +380,7 @@ namespace Rajinibon.Services
             var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
 
-            var result = GetStudentCheckTimes(models, timeStart, timeEnd).Result.ToList();
+            var result = GetStudentCheckTimes(models, timeStart, timeEnd).ToList();
 
             return result;
         }
@@ -396,7 +393,7 @@ namespace Rajinibon.Services
             var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
-            var result = GetStudentSentMessage(models, timeStart, timeEnd).Result.ToList();
+            var result = GetStudentSentMessage(models, timeStart, timeEnd).ToList();
 
             return result;
         }
@@ -409,35 +406,32 @@ namespace Rajinibon.Services
             var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
 
-            var result = GetStudentSentMessage(models, timeStart, timeEnd).Result.ToList();
+            var result = GetStudentSentMessage(models, timeStart, timeEnd).ToList();
 
             return result;
         }
 
-        public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessage(IEnumerable<StudentSentMessage> models, TimeSpan timeStart, TimeSpan timeEnd)
+        public IEnumerable<StudentSentMessage> GetStudentSentMessage(IEnumerable<StudentSentMessage> models, TimeSpan timeStart, TimeSpan timeEnd)
         {
             var result = new List<StudentSentMessage>();
 
-            await Task.Run(() =>
+            foreach (var item in models)
             {
-                foreach (var item in models)
-                {
-                    var sentTime = item.SentTime;
-                    var time = new TimeSpan(sentTime.Hour, sentTime.Minute, sentTime.Millisecond);
+                var sentTime = item.SentTime;
+                var time = new TimeSpan(sentTime.Hour, sentTime.Minute, sentTime.Millisecond);
 
-                    if (time.IsBetween(timeStart, timeEnd))
+                if (time.IsBetween(timeStart, timeEnd))
+                {
+                    var model = new StudentSentMessage()
                     {
-                        var model = new StudentSentMessage()
-                        {
-                            EmpId = item.EmpId,
-                            Status = item.Status,
-                            SentType = item.SentType,
-                            SentTime = sentTime
-                        };
-                        result.Add(model);
-                    }
+                        EmpId = item.EmpId,
+                        Status = item.Status,
+                        SentType = item.SentType,
+                        SentTime = sentTime
+                    };
+                    result.Add(model);
                 }
-            });
+            }
 
             return result;
         }
@@ -630,12 +624,12 @@ namespace Rajinibon.Services
             }
             catch (Exception ex)
             {
-                SaveExceptionLog(ex).ConfigureAwait(false);
+                SaveExceptionLog(ex);
             }
 
         }
 
-        public async Task<List<StudentCheckTime>> GetStudentCheckTimesEntryMySql(string date)
+        public List<StudentCheckTime> GetStudentCheckTimesEntryMySql(string date)
         {
             var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
             var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
@@ -644,12 +638,12 @@ namespace Rajinibon.Services
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
             // get student entry from MySql
-            var studentsEntryDb = await MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
+            var studentsEntryDb = MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
 
             return studentsEntryDb.ToList();
         }
 
-        public async Task<List<StudentCheckTime>> GetStudentCheckTimesExitMySql(string date)
+        public List<StudentCheckTime> GetStudentCheckTimesExitMySql(string date)
         {
             var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
             var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
@@ -658,19 +652,19 @@ namespace Rajinibon.Services
             var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
 
             // get student entry from MySql
-            var studentsExitDb = await MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
+            var studentsExitDb = MySqlDataConnection.GetStudentCheckTimes(date.GetDate(), timeStart, timeEnd);
 
             return studentsExitDb.ToList();
         }
 
-        public async Task RemoveSentMessageError()
+        public void RemoveSentMessageError()
         {
-            await MySqlDataConnection.RemoveSentMessageError();
+            MySqlDataConnection.RemoveSentMessageError();
         }
 
-        public async Task<List<StudentSentMessage>> GetStudentsSentMessageError()
+        public List<StudentSentMessage> GetStudentsSentMessageError()
         {
-            var results = await MySqlDataConnection.GetStudentsSentMessageError();
+            var results = MySqlDataConnection.GetStudentsSentMessageError();
 
             return results;
         }

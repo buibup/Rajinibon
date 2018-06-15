@@ -63,8 +63,8 @@ namespace Rajinibon.SentMessage
 
                     #region 1.ดึงข้อมูลนักเรียนที่ไม่เคยส่งข้อความในช่วงเวลานั้นๆ
                     // get all student
-                    var studentsCheckTimeEntry = studentService.GetStudentCheckTimesEntryMySql(GlobalConfig.Date).Result.ToList();
-                    var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).Result.ToList();
+                    var studentsCheckTimeEntry = studentService.GetStudentCheckTimesEntryMySql(GlobalConfig.Date).ToList();
+                    var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).ToList();
 
                     // get all student sent message
                     var studentsSentMessageEntry = studentService.GetStudentSentMessageEntry(GlobalConfig.CurrentDate).ToList();

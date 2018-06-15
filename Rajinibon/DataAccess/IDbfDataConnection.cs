@@ -10,7 +10,7 @@ namespace Rajinibon.DataAccess
 {
     interface IDbfDataConnection
     {
-        Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(string rootPath, string date);
+        IEnumerable<StudentCheckTime> GetStudentCheckTimes(string rootPath, string date);
         Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(DateTime date, TimeSpan startTime, TimeSpan endTime);
     }
 }

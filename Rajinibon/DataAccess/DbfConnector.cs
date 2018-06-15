@@ -12,7 +12,7 @@ namespace Rajinibon.DataAccess
 {
     public class DbfConnector : IDbfDataConnection
     {
-        public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(string rootPath, string date)
+        public IEnumerable<StudentCheckTime> GetStudentCheckTimes(string rootPath, string date)
         {
             var results = new List<StudentCheckTime>();
             var fullPath = rootPath.GetFullPath(date);
@@ -22,7 +22,7 @@ namespace Rajinibon.DataAccess
                 using (var table = Table.Open(fullPath))
                 {
                     var reader = table.OpenReader(Encoding.GetEncoding(874));
-                    while (await reader.ReadAsync())
+                    while (reader.Read())
                     {
                         decimal? cuserid = reader.GetDecimal("CUSERID") == null ? 0 : reader.GetDecimal("CUSERID");
                         DateTime? chkTime = reader.GetDateTime("CHKTIME");

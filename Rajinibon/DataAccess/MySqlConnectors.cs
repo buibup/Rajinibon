@@ -14,12 +14,11 @@ namespace Rajinibon.DataAccess
     {
         private readonly string connString = GlobalConfig.CnnString("DefaultConnection");
 
-        public async Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(string date, TimeSpan timeStart, TimeSpan timeEnd)
+        public IEnumerable<StudentCheckTime> GetStudentCheckTimes(string date, TimeSpan timeStart, TimeSpan timeEnd)
         {
             var results = new List<StudentCheckTime>();
             using(var connection = new MySqlConnection(connString))
             {
-                await connection.OpenAsync();
                 results = connection.QueryAsync<StudentCheckTime>(MySqlDbQuery.GetStudentCheckTimeByDate(), new { chk_time = date }).Result.ToList();
             }
 
@@ -37,43 +36,42 @@ namespace Rajinibon.DataAccess
             return results.GetStudentSentMessage(timeStart, timeEnd);
         }
 
-        public async Task<List<StudentSentMessage>> GetStudentsSentMessageError()
+        public List<StudentSentMessage> GetStudentsSentMessageError()
         {
             var results = new List<StudentSentMessage>();
             using (var connection = new MySqlConnection(connString))
             {
-                await connection.OpenAsync();
                 results = connection.QueryAsync<StudentSentMessage>(MySqlDbQuery.GetStudentsSentMessageError()).Result.ToList();
 
                 return results;
             }
         }
 
-        public async Task RemoveSentMessageError()
+        public void RemoveSentMessageError()
         {
             using (var connection = new MySqlConnection(connString))
             {
-                await connection.QueryAsync(MySqlDbQuery.RemoveSentMessageError());
+                connection.QueryAsync(MySqlDbQuery.RemoveSentMessageError());
             }
         }
 
-        public async Task RemoveStudentsCheckTimeLess(string date)
+        public void RemoveStudentsCheckTimeLess(string date)
         {
             using(var connection = new MySqlConnection(connString))
             {
-                await connection.QueryAsync(MySqlDbQuery.RemoveStudentsCheckTimeLess(), new { chk_time = date });
+                connection.Query(MySqlDbQuery.RemoveStudentsCheckTimeLess(), new { chk_time = date });
             }
         }
 
-        public async Task RemoveStudentsSentMessageLess(string date)
+        public void RemoveStudentsSentMessageLess(string date)
         {
             using (var connection = new MySqlConnection(connString))
             {
-                await connection.QueryAsync(MySqlDbQuery.RemoveStudentsSentMessageLess(), new { chk_time = date });
+                connection.Query(MySqlDbQuery.RemoveStudentsSentMessageLess(), new { chk_time = date });
             }
         }
 
-        public async Task SaveExceptionLog(Exception ex)
+        public void SaveExceptionLog(Exception ex)
         {
             var model = new ExceptionLog()
             {
@@ -82,17 +80,17 @@ namespace Rajinibon.DataAccess
             };
             using(var connection = new MySqlConnection(connString))
             {
-                await connection.ExecuteAsync(MySqlDbQuery.SaveExceptionLog(), ex);
+                connection.Execute(MySqlDbQuery.SaveExceptionLog(), ex);
             }
         }
 
-        public async Task SaveStudentCheckTimes(IEnumerable<StudentCheckTime> models)
+        public void SaveStudentCheckTimes(IEnumerable<StudentCheckTime> models)
         {
             try
             {
                 using (var connection = new MySqlConnection(connString))
                 {
-                    await connection.ExecuteAsync(MySqlDbQuery.SaveStudentCheckTimes(), models);
+                    connection.Execute(MySqlDbQuery.SaveStudentCheckTimes(), models);
                 }
             }
             catch (Exception)
@@ -111,7 +109,7 @@ namespace Rajinibon.DataAccess
             }
             catch (Exception ex)
             {
-                SaveExceptionLog(ex).ConfigureAwait(false);
+                SaveExceptionLog(ex);
             }
         }
 
@@ -126,22 +124,22 @@ namespace Rajinibon.DataAccess
             }
             catch (Exception ex)
             {
-                SaveExceptionLog(ex).ConfigureAwait(false);
+                SaveExceptionLog(ex);
             }
         }
 
-        public async Task SaveStudentSentMessageAsync(IEnumerable<StudentSentMessage> models)
+        public void SaveStudentSentMessageAsync(IEnumerable<StudentSentMessage> models)
         {
             try
             {
                 using (var connection = new MySqlConnection(connString))
                 {
-                    await connection.ExecuteAsync(MySqlDbQuery.SaveStudentSentMessages(), models);
+                    connection.ExecuteAsync(MySqlDbQuery.SaveStudentSentMessages(), models);
                 }
             }
             catch (Exception ex)
             {
-                await SaveExceptionLog(ex);
+                SaveExceptionLog(ex);
             }
         }
 
@@ -183,7 +181,7 @@ namespace Rajinibon.DataAccess
             }
             catch (Exception ex)
             {
-                SaveExceptionLog(ex).ConfigureAwait(false);
+                SaveExceptionLog(ex);
                 result = false;
             }
 

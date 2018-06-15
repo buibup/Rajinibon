@@ -9,12 +9,12 @@ namespace Rajinibon.Services
 {
     public interface IStudentService
     {
-        Task<Tuple<List<StudentCheckTime>, List<StudentCheckTime>>> GetStudentCheckTimesEntry(string date);
-        Task<Tuple<List<StudentCheckTime>, List<StudentCheckTime>>> GetStudentCheckTimesExit(string date);
-        Task<List<StudentCheckTime>> GetStudentCheckTimesEntryMySql(string date);
-        Task<List<StudentCheckTime>> GetStudentCheckTimesExitMySql(string date);
-        Task<List<StudentCheckTime>> GetStudentsEntryDbf(string date);
-        Task<List<StudentCheckTime>> GetStudentsExitDbf(string date);
+        Tuple<List<StudentCheckTime>, List<StudentCheckTime>> GetStudentCheckTimesEntry(string date);
+        Tuple<List<StudentCheckTime>, List<StudentCheckTime>> GetStudentCheckTimesExit(string date);
+        List<StudentCheckTime> GetStudentCheckTimesEntryMySql(string date);
+        List<StudentCheckTime> GetStudentCheckTimesExitMySql(string date);
+        List<StudentCheckTime> GetStudentsEntryDbf(string date);
+        List<StudentCheckTime> GetStudentsExitDbf(string date);
         List<StudentCheckTime> GetStudentsEntryMySql(string date);
         List<StudentCheckTime> GetStudentsExitMySql(string date);
         List<StudentCheckTime> GetStudentsEntryFromList(List<StudentCheckTime> models);
@@ -25,16 +25,16 @@ namespace Rajinibon.Services
         List<StudentSentMessage> GetStudentSentMessageExitFromList(List<StudentSentMessage> models);
         IEnumerable<StudentSentMessage> GetStudentSentMessageEntry(string date);
         IEnumerable<StudentSentMessage> GetStudentSentMessageExit(string date);
-        Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(IEnumerable<StudentCheckTime> models, TimeSpan timeStart, TimeSpan timeEnd);
-        Task<IEnumerable<StudentSentMessage>> GetStudentSentMessage(IEnumerable<StudentSentMessage> models, TimeSpan timeStart, TimeSpan timeEnd);
-        Task SaveStudentStudentCheckTime(IEnumerable<StudentCheckTime> models);
-        Task SaveStudentSentMessage(IEnumerable<StudentCheckTime> models);
-        Task RemoveStudentsLess(string date);
+        IEnumerable<StudentCheckTime> GetStudentCheckTimes(IEnumerable<StudentCheckTime> models, TimeSpan timeStart, TimeSpan timeEnd);
+        IEnumerable<StudentSentMessage> GetStudentSentMessage(IEnumerable<StudentSentMessage> models, TimeSpan timeStart, TimeSpan timeEnd);
+        void SaveStudentStudentCheckTime(IEnumerable<StudentCheckTime> models);
+        void SaveStudentSentMessage(IEnumerable<StudentCheckTime> models);
+        void RemoveStudentsLess(string date);
         void SentStudentNotifyMessage(IEnumerable<StudentCheckTime> models, SentType sentType);
         void SentStudentsNotifyMessage(IEnumerable<StudentCheckTime> models, SentType sentType);
-        Task SaveExceptionLog(Exception ex);
+        void SaveExceptionLog(Exception ex);
         bool SentMessageSuccess(IEnumerable<StudentCheckTime> models, SentType sentType);
-        Task RemoveSentMessageError();
-        Task<List<StudentSentMessage>> GetStudentsSentMessageError();
+        void RemoveSentMessageError();
+        List<StudentSentMessage> GetStudentsSentMessageError();
     }
 }
