@@ -23,8 +23,8 @@ namespace Rajinibon.Services
         List<StudentSentMessage> GetStudentsSentMessagesEntryFromMySql(string date);
         List<StudentSentMessage> GetStudentsSentMessagesExitFromMySql(string date);
         List<StudentSentMessage> GetStudentSentMessageExitFromList(List<StudentSentMessage> models);
-        Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageEntryAsync(string date);
-        Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageExitAsync(string date);
+        IEnumerable<StudentSentMessage> GetStudentSentMessageEntry(string date);
+        IEnumerable<StudentSentMessage> GetStudentSentMessageExit(string date);
         Task<IEnumerable<StudentCheckTime>> GetStudentCheckTimes(IEnumerable<StudentCheckTime> models, TimeSpan timeStart, TimeSpan timeEnd);
         Task<IEnumerable<StudentSentMessage>> GetStudentSentMessage(IEnumerable<StudentSentMessage> models, TimeSpan timeStart, TimeSpan timeEnd);
         Task SaveStudentStudentCheckTime(IEnumerable<StudentCheckTime> models);

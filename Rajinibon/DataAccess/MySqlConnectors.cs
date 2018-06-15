@@ -26,12 +26,11 @@ namespace Rajinibon.DataAccess
             return results.GetStudentCheckTimes(timeStart, timeEnd);
         }
 
-        public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessages(string date, TimeSpan timeStart, TimeSpan timeEnd)
+        public IEnumerable<StudentSentMessage> GetStudentSentMessages(string date, TimeSpan timeStart, TimeSpan timeEnd)
         {
             var results = new List<StudentSentMessage>();
             using (var connection = new MySqlConnection(connString))
             {
-                await connection.OpenAsync();
                 results = connection.QueryAsync<StudentSentMessage>(MySqlDbQuery.GetStudentSentMessagesByDate(), new { chk_time = date }).Result.ToList();
             }
 

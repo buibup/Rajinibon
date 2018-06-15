@@ -262,7 +262,7 @@ namespace Rajinibon.Services
             }
         }
 
-        public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageEntryAsync(string date)
+        public IEnumerable<StudentSentMessage> GetStudentSentMessageEntry(string date)
         {
             var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
             var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
@@ -271,12 +271,12 @@ namespace Rajinibon.Services
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
             // get student sent message entry from MySql
-            var studentsSentMessagesEntryDb = await MySqlDataConnection.GetStudentSentMessages(date.GetDate(), timeStart, timeEnd);
+            var studentsSentMessagesEntryDb = MySqlDataConnection.GetStudentSentMessages(date.GetDate(), timeStart, timeEnd);
 
             return studentsSentMessagesEntryDb;
         }
 
-        public async Task<IEnumerable<StudentSentMessage>> GetStudentSentMessageExitAsync(string date)
+        public IEnumerable<StudentSentMessage> GetStudentSentMessageExit(string date)
         {
             var exitStartTime = GlobalConfig.AppSettings("exitStartTime").Split(':');
             var exitEndTime = GlobalConfig.AppSettings("exitEndTime").Split(':');
@@ -285,7 +285,7 @@ namespace Rajinibon.Services
             var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
 
             // get student sent message entry from MySql
-            var studentsSentMessagesExitDb = await MySqlDataConnection.GetStudentSentMessages(date.GetDate(), timeStart, timeEnd);
+            var studentsSentMessagesExitDb = MySqlDataConnection.GetStudentSentMessages(date.GetDate(), timeStart, timeEnd);
 
             return studentsSentMessagesExitDb;
         }
@@ -450,7 +450,7 @@ namespace Rajinibon.Services
             var timeStart = new TimeSpan(int.Parse(entryStartTime[0]), int.Parse(entryStartTime[1]), int.Parse(entryStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(entryEndTime[0]), int.Parse(entryEndTime[1]), int.Parse(entryEndTime[2]));
 
-            var result = MySqlDataConnection.GetStudentSentMessages(date, timeStart, timeEnd).Result.ToList();
+            var result = MySqlDataConnection.GetStudentSentMessages(date, timeStart, timeEnd).ToList();
 
             return result;
         }
@@ -463,7 +463,7 @@ namespace Rajinibon.Services
             var timeStart = new TimeSpan(int.Parse(exitStartTime[0]), int.Parse(exitStartTime[1]), int.Parse(exitStartTime[2]));
             var timeEnd = new TimeSpan(int.Parse(exitEndTime[0]), int.Parse(exitEndTime[1]), int.Parse(exitEndTime[2]));
 
-            var result = MySqlDataConnection.GetStudentSentMessages(date, timeStart, timeEnd).Result.ToList();
+            var result = MySqlDataConnection.GetStudentSentMessages(date, timeStart, timeEnd).ToList();
 
             return result;
         }

@@ -39,11 +39,11 @@ namespace Rajinibon.DataAccess
 
                 if (sentType == SentType.Entry)
                 {
-                    studentSentMessageDb = studentService.GetStudentSentMessageEntryAsync(Helper.GetDate("current")).Result.ToList();
+                    studentSentMessageDb = studentService.GetStudentSentMessageEntry(Helper.GetDate("current")).ToList();
                 }
                 else if (sentType == SentType.Exit)
                 {
-                    studentSentMessageDb = studentService.GetStudentSentMessageExitAsync(Helper.GetDate("current")).Result.ToList();
+                    studentSentMessageDb = studentService.GetStudentSentMessageExit(Helper.GetDate("current")).ToList();
                 }
 
                 var studentForSentMessage = models.Where(s => !studentSentMessageDb.Any(s2 => s.EmpId == s2.EmpId));

@@ -14,7 +14,7 @@ namespace Rajinibon.DataAccess
         Task SaveStudentSentMessageAsync(IEnumerable<StudentSentMessage> models);
         void SaveStudentSentMessage(IEnumerable<StudentSentMessage> model);
         void SaveStudentSentMessage(StudentSentMessage models);
-        Task<IEnumerable<StudentSentMessage>> GetStudentSentMessages(string date, TimeSpan timeStart, TimeSpan timeEnd);
+        IEnumerable<StudentSentMessage> GetStudentSentMessages(string date, TimeSpan timeStart, TimeSpan timeEnd);
         Task<List<StudentSentMessage>> GetStudentsSentMessageError();
         Task SaveExceptionLog(Exception ex);
         Task RemoveStudentsCheckTimeLess(string date);

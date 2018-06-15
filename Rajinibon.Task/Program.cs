@@ -170,8 +170,8 @@ namespace Rajinibon.Task
                         var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).Result.ToList();
 
                         // get all student sent message
-                        var studentsSentMessageEntry = studentService.GetStudentSentMessageEntryAsync(GlobalConfig.CurrentDate).Result.ToList();
-                        var studentsSentMessageExit = studentService.GetStudentSentMessageExitAsync(GlobalConfig.CurrentDate).Result.ToList();
+                        var studentsSentMessageEntry = studentService.GetStudentSentMessageEntry(GlobalConfig.CurrentDate).ToList();
+                        var studentsSentMessageExit = studentService.GetStudentSentMessageExit(GlobalConfig.CurrentDate).ToList();
 
                         // get all student sent message and success
                         var studentsSuccessEntry = studentsSentMessageEntry.Where(std => std.Status.ToLower() == "success").ToList();
