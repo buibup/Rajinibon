@@ -618,8 +618,10 @@ namespace Rajinibon.Services
                     var responseMsg = SentOnceNotifyMessage(item, sentType);
                     while (responseMsg.success != "1")
                     {
+                        Thread.Sleep(2000);
                         responseMsg = SentOnceNotifyMessage(item, sentType);
                     }
+                    Thread.Sleep(2000);
                 }
             }
             catch (Exception ex)
