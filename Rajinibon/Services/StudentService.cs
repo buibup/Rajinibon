@@ -468,11 +468,16 @@ namespace Rajinibon.Services
             return result;
         }
 
-        public void SentOnceNotifyMessage(StudentCheckTime model, SentType sentType)
+        public ResponseMessage SentOnceNotifyMessage(StudentCheckTime model, SentType sentType)
         {
+            var result = new ResponseMessage();
             if (MySqlDataConnection.SentSuccess(model.EmpId, sentType))
             {
-                return;
+                result = new ResponseMessage()
+                {
+                    success = "1"
+                };
+                return result;
             }
 
             var studentsAddPara = GlobalConfig.AppSettings("students");
@@ -531,7 +536,7 @@ namespace Rajinibon.Services
 
                 ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
 
-                
+                result = res;
 
                 if (res != null)
                 {
@@ -559,27 +564,17 @@ namespace Rajinibon.Services
                             ChkTime = model.ChkTime
                         };
                         MySqlDataConnection.SaveStudentSentMessage(sentMessage);
-
-                        // sent again
-                        SentOnceNotifyMessage(model, sentType);
                     }
                 }
             });
+
+            return result;
         }
 
         public void SentStudentsNotifyMessage(IEnumerable<StudentCheckTime> models, SentType sentType)
         {
             try
             {
-                var studentsAddPara = GlobalConfig.AppSettings("students");
-                var roomsAddPara = GlobalConfig.AppSettings("rooms");
-                var messageAddPara = GlobalConfig.AppSettings("message");
-                var usernameAddPara = GlobalConfig.AppSettings("username");
-
-                var url = GlobalConfig.AppSettings("sentMessageService")
-                .Replace("{schoolCode}", GlobalConfig.AppSettings("schoolCode"))
-                .Replace("{roleCode}", GlobalConfig.AppSettings("roleCode"));
-
                 foreach (var item in models)
                 {
                     if (MySqlDataConnection.SentSuccess(item.EmpId, sentType))
@@ -587,95 +582,14 @@ namespace Rajinibon.Services
                         continue;
                     }
 
-                    var studentsReq = studentsAddPara == "999902" ? studentsAddPara : item.EmpId;
-                    var client = new RestClient(url);
-                    var request = new RestRequest(Method.POST);
-                    request.AddBody("content-type", "application/form-data");
-
-                    #region message
-                    //entry
-                    //ทดสอบ
-                    //รหัสนักเรียน
-                    //ชื่อ
-                    //เวลาเข้าเรียน
-
-                    //exit
-                    //ทดสอบ
-                    //รหัสนักเรียน
-                    //ชื่อ
-                    //เวลาเลิกเรียน
-                    #endregion
-
-                    request.AddParameter("students", studentsReq);
-                    if(sentType == SentType.Entry)
+                    while(SentOnceNotifyMessage(item, sentType).success != "1")
                     {
-                        request.AddParameter("message",
-                        $"ทดสอบ" + System.Environment.NewLine +
-                        $"รหัสนักเรียน: {item.EmpId}" + System.Environment.NewLine +
-                        $"ชื่อ: {item.EmpName}" + System.Environment.NewLine +
-                        $"เวลาเข้าเรียน: {item.ChkTime}");
                     }
-                    else if(sentType == SentType.Exit)
-                    {
-                        request.AddParameter("message",
-                        $"ทดสอบ" + System.Environment.NewLine +
-                        $"รหัสนักเรียน: {item.EmpId}" + System.Environment.NewLine +
-                        $"ชื่อ: {item.EmpName}" + System.Environment.NewLine +
-                        $"เวลาเลิกเรียน: {item.ChkTime}");
-                    }
-
-                    request.AddParameter("rooms", roomsAddPara);
-                    request.AddParameter("username", usernameAddPara);
-
-                    //Thread.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
-
-                    client.ExecuteAsync(request, response =>
-                    {
-                        StudentSentMessage model = new StudentSentMessage();
-                        var json = response.Content;
-
-                        ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
-
-
-                        if (res != null)
-                        {
-                            if (res.success == "1")
-                            {
-                                model = new StudentSentMessage()
-                                {
-                                    EmpId = item.EmpId,
-                                    Status = $"{SentStatus.Success}",
-                                    SentType = sentType.ToString(),
-                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
-                                    ChkTime = item.ChkTime
-                                };
-
-                                MySqlDataConnection.SaveStudentSentMessage(model);
-                            }
-                            else
-                            {
-                                model = new StudentSentMessage()
-                                {
-                                    EmpId = item.EmpId,
-                                    Status = $"{SentStatus.Error} : {res.error}",
-                                    SentType = sentType.ToString(),
-                                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
-                                    ChkTime = item.ChkTime
-                                };
-                                MySqlDataConnection.SaveStudentSentMessage(model);
-
-                                SentOnceNotifyMessage(item, sentType);
-                            }
-                        }
-                    });
                 }
             }
             catch (Exception ex)
             {
-
-                label: //creating label with colon(:)
                 SaveExceptionLog(ex).ConfigureAwait(false);
-                goto label; //jump to label statement 
             }
             
         }
