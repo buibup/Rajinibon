@@ -508,6 +508,8 @@ namespace Rajinibon.Services
             //เวลาเลิกเรียน
             #endregion
 
+            
+
             request.AddParameter("students", studentsReq);
             if (sentType == SentType.Entry)
             {
@@ -529,44 +531,82 @@ namespace Rajinibon.Services
             request.AddParameter("rooms", roomsAddPara);
             request.AddParameter("username", usernameAddPara);
 
-            client.ExecuteAsync(request, response =>
+            StudentSentMessage sentMessage = new StudentSentMessage();
+
+            var json = client.Execute<ResponseMessage>(request).Content;
+            ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
+            result = res;
+
+            if (res != null)
             {
-                StudentSentMessage sentMessage = new StudentSentMessage();
-                var json = response.Content;
-
-                ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
-
-                result = res;
-
-                if (res != null)
+                if (res.success == "1")
                 {
-                    if (res.success == "1")
+                    sentMessage = new StudentSentMessage()
                     {
-                        sentMessage = new StudentSentMessage()
-                        {
-                            EmpId = model.EmpId,
-                            Status = $"{SentStatus.Success}",
-                            SentType = sentType.ToString(),
-                            SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
-                            ChkTime = model.ChkTime
-                        };
+                        EmpId = model.EmpId,
+                        Status = $"{SentStatus.Success}",
+                        SentType = sentType.ToString(),
+                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
+                        ChkTime = model.ChkTime
+                    };
 
-                        MySqlDataConnection.SaveStudentSentMessage(sentMessage);
-                    }
-                    else
-                    {
-                        sentMessage = new StudentSentMessage()
-                        {
-                            EmpId = model.EmpId,
-                            Status = $"{SentStatus.Error} : {res.error}",
-                            SentType = sentType.ToString(),
-                            SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
-                            ChkTime = model.ChkTime
-                        };
-                        MySqlDataConnection.SaveStudentSentMessage(sentMessage);
-                    }
+                    MySqlDataConnection.SaveStudentSentMessage(sentMessage);
                 }
-            });
+                else
+                {
+                    sentMessage = new StudentSentMessage()
+                    {
+                        EmpId = model.EmpId,
+                        Status = $"{SentStatus.Error} : {res.error}",
+                        SentType = sentType.ToString(),
+                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
+                        ChkTime = model.ChkTime
+                    };
+                    MySqlDataConnection.SaveStudentSentMessage(sentMessage);
+                }
+            }
+
+            #region sent Async
+
+            //client.ExecuteAsync(request, response =>
+            //{
+            //    StudentSentMessage sentMessage = new StudentSentMessage();
+            //    var json = response.Content;
+
+            //    ResponseMessage resAsync = JsonConvert.DeserializeObject<ResponseMessage>(json);
+
+            //    result = resAsync;
+
+            //    if (resAsync != null)
+            //    {
+            //        if (resAsync.success == "1")
+            //        {
+            //            sentMessage = new StudentSentMessage()
+            //            {
+            //                EmpId = model.EmpId,
+            //                Status = $"{SentStatus.Success}",
+            //                SentType = sentType.ToString(),
+            //                SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
+            //                ChkTime = model.ChkTime
+            //            };
+
+            //            MySqlDataConnection.SaveStudentSentMessage(sentMessage);
+            //        }
+            //        else
+            //        {
+            //            sentMessage = new StudentSentMessage()
+            //            {
+            //                EmpId = model.EmpId,
+            //                Status = $"{SentStatus.Error} : {resAsync.error}",
+            //                SentType = sentType.ToString(),
+            //                SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
+            //                ChkTime = model.ChkTime
+            //            };
+            //            MySqlDataConnection.SaveStudentSentMessage(sentMessage);
+            //        }
+            //    }
+            //});
+            #endregion
 
             return result;
         }
