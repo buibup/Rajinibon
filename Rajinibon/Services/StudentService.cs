@@ -582,8 +582,10 @@ namespace Rajinibon.Services
                         continue;
                     }
 
-                    while(SentOnceNotifyMessage(item, sentType).success != "1")
+                    var responseMsg = SentOnceNotifyMessage(item, sentType);
+                    while (responseMsg.success != "1")
                     {
+                        responseMsg = SentOnceNotifyMessage(item, sentType);
                     }
                 }
             }
