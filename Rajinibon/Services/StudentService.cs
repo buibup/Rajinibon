@@ -137,20 +137,20 @@ namespace Rajinibon.Services
 
                 var studentForSentMessage = new List<StudentCheckTime>();
 
-                if(models.ToList().Count > 0)
+                if (models.ToList().Count > 0)
                 {
                     studentForSentMessage = models.ToList();
                 }
                 else
                 {
-                    if(sentType == SentType.Entry)
+                    if (sentType == SentType.Entry)
                     {
                         // get students checktime from databas
                         GlobalConfig.StudentCheckTimes = GetStudentsEntryMySql(GlobalConfig.Date);
 
                         // get students sent message from database
                         GlobalConfig.StudentSentMessages = GetStudentsSentMessagesEntryFromMySql(GlobalConfig.CurrentDate);
-                                                
+
                         var diff = GlobalConfig.StudentCheckTimes.ToList().Count - GlobalConfig.StudentSentMessages.ToList().Count;
 
                         if (diff != 0)
@@ -163,7 +163,7 @@ namespace Rajinibon.Services
                             SentStudentNotifyMessage(StudentSentMessagesError.Take(30), sentType);
                         }
                     }
-                    else if(sentType == SentType.Exit)
+                    else if (sentType == SentType.Exit)
                     {
                         // get students checktime from databas
                         GlobalConfig.StudentCheckTimes = GetStudentsExitMySql(GlobalConfig.Date);
@@ -258,7 +258,7 @@ namespace Rajinibon.Services
             }
             catch (Exception ex)
             {
-                 SaveExceptionLog(ex).ConfigureAwait(false);
+                SaveExceptionLog(ex).ConfigureAwait(false);
             }
         }
 
@@ -304,7 +304,7 @@ namespace Rajinibon.Services
         {
             var data = await DbfDataConnection.GetStudentCheckTimes(GlobalConfig.DbfPath, date);
 
-            if(date.ToList().Count == 0) { return new List<StudentCheckTime>(); }
+            if (date.ToList().Count == 0) { return new List<StudentCheckTime>(); }
 
             var entryStartTime = GlobalConfig.AppSettings("entryStartTime").Split(':');
             var entryEndTime = GlobalConfig.AppSettings("entryEndTime").Split(':');
@@ -508,7 +508,7 @@ namespace Rajinibon.Services
             //เวลาเลิกเรียน
             #endregion
 
-            
+
 
             request.AddParameter("students", studentsReq);
             if (sentType == SentType.Entry)
@@ -534,37 +534,36 @@ namespace Rajinibon.Services
             StudentSentMessage sentMessage = new StudentSentMessage();
 
             var json = client.Execute<ResponseMessage>(request).Content;
-            ResponseMessage res = JsonConvert.DeserializeObject<ResponseMessage>(json);
-            result = res;
+            result = JsonConvert.DeserializeObject<ResponseMessage>(json);
 
-            if (res != null)
+            //if (res != null)
+            //{
+            if (result.success == "1")
             {
-                if (res.success == "1")
+                sentMessage = new StudentSentMessage()
                 {
-                    sentMessage = new StudentSentMessage()
-                    {
-                        EmpId = model.EmpId,
-                        Status = $"{SentStatus.Success}",
-                        SentType = sentType.ToString(),
-                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
-                        ChkTime = model.ChkTime
-                    };
+                    EmpId = model.EmpId,
+                    Status = $"{SentStatus.Success}",
+                    SentType = sentType.ToString(),
+                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
+                    ChkTime = model.ChkTime
+                };
 
-                    MySqlDataConnection.SaveStudentSentMessage(sentMessage);
-                }
-                else
-                {
-                    sentMessage = new StudentSentMessage()
-                    {
-                        EmpId = model.EmpId,
-                        Status = $"{SentStatus.Error} : {res.error}",
-                        SentType = sentType.ToString(),
-                        SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
-                        ChkTime = model.ChkTime
-                    };
-                    MySqlDataConnection.SaveStudentSentMessage(sentMessage);
-                }
+                MySqlDataConnection.SaveStudentSentMessage(sentMessage);
             }
+            else
+            {
+                sentMessage = new StudentSentMessage()
+                {
+                    EmpId = model.EmpId,
+                    Status = $"{SentStatus.Error} : {result.error}",
+                    SentType = sentType.ToString(),
+                    SentTime = DateTime.Parse(Helper.GetDateNowStringUs("yyyy-MM-dd HH:mm:ss")),
+                    ChkTime = model.ChkTime
+                };
+                MySqlDataConnection.SaveStudentSentMessage(sentMessage);
+            }
+            //}
 
             #region sent Async
 
@@ -633,7 +632,7 @@ namespace Rajinibon.Services
             {
                 SaveExceptionLog(ex).ConfigureAwait(false);
             }
-            
+
         }
 
         public async Task<List<StudentCheckTime>> GetStudentCheckTimesEntryMySql(string date)

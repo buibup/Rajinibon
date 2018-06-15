@@ -22,40 +22,44 @@ namespace Rajinibon.SentMessage
             var startTime = new TimeSpan(int.Parse(timeStartConfig[0]), int.Parse(timeStartConfig[1]), int.Parse(timeStartConfig[2])); //DateTime.Now.TimeOfDay;
             var endTime = new TimeSpan(int.Parse(timeEndConfig[0]), int.Parse(timeEndConfig[1]), int.Parse(timeEndConfig[2]));
 
+            Console.WriteLine($"Task sent message proccessing...");
+
             //sent message
             RunSentMessage(startTime, endTime);
 
-            Console.WriteLine($"Task sent message proccessing...");
+            Console.WriteLine($"Task sent message finish.");
             Console.ReadLine();
+            Environment.Exit(0);
         }
         private static System.Threading.Timer timer;
         private static void RunSentMessage(TimeSpan startTime, TimeSpan endTime)
         {
             try
             {
-                
-                DateTime current = DateTime.Now;
-                TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
-                if (timeToGo < TimeSpan.Zero)
-                {
-                    return;//time already passed
-                }
-                timer = new System.Threading.Timer(x =>
-                {
-                    var currentTime = DateTime.Now.TimeOfDay;
-                    Stopwatch s = new Stopwatch();
-                    s.Start();
 
-                    // startTime and currentTime <= endTime
-                    while (startTime <= endTime && currentTime <= endTime)
+                //DateTime current = DateTime.Now;
+                //TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
+                //if (timeToGo < TimeSpan.Zero)
+                //{
+                //    return;//time already passed
+                //}
+                //timer = new System.Threading.Timer(x =>
+                //{
+                var currentTime = DateTime.Now.TimeOfDay;
+                //Stopwatch s = new Stopwatch();
+                //s.Start();
+
+                // startTime and currentTime <= endTime
+                while (currentTime >= startTime && currentTime <= endTime)
+                {
+                    try
                     {
-
                         /** Process sent student message
-                         * 1. get all student check time 
-                         * 2. loop sent each student every 2 sec (count students * 2 then use for sleep thead)
-                         * 3. check error students
-                         * 4. sent error students
-                        */
+                    * 1. get all student check time 
+                    * 2. loop sent each student every 2 sec (count students * 2 then use for sleep thead)
+                    * 3. check error students
+                    * 4. sent error students
+                   */
 
                         #region 1.ดึงข้อมูลนักเรียนที่ไม่เคยส่งข้อความในช่วงเวลานั้นๆ
                         // get all student
@@ -88,10 +92,18 @@ namespace Rajinibon.SentMessage
                         }
 
                         Thread.Sleep(TimeSpan.FromSeconds(2));
+                        currentTime = DateTime.Now.TimeOfDay;
                     }
-                    s.Stop();
-                    Environment.Exit(0);
-                }, null, timeToGo, Timeout.InfiniteTimeSpan);
+                    catch (Exception exApp)
+                    {
+                        // show exception on console
+                        Console.WriteLine(exApp.Message.ToString());
+                        Console.ReadLine();
+                    }
+                }
+                //s.Stop();
+                //Environment.Exit(0);
+                //}, null, 0, Timeout.InfiniteTimeSpan);
             }
             catch (Exception ex)
             {
