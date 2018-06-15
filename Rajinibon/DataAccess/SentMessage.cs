@@ -94,7 +94,7 @@ namespace Rajinibon.DataAccess
             }
             catch (Exception ex)
             {
-                studentService.SaveExceptionLog(ex).ConfigureAwait(false);
+                studentService.SaveExceptionLog(ex);
             }
         }
     }

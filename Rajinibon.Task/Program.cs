@@ -21,7 +21,7 @@ namespace Rajinibon.Task
             studentService = new StudentService();
 
             // remove student < get date
-            studentService.RemoveStudentsLess(GlobalConfig.Date.GetDate()).ConfigureAwait(false);
+            studentService.RemoveStudentsLess(GlobalConfig.Date.GetDate());
 
             var timeStartConfig = GlobalConfig.AppSettings("taskStartTime").Split(':');
             var timeEndConfig = GlobalConfig.AppSettings("taskEndTime").Split(':');
@@ -58,8 +58,8 @@ namespace Rajinibon.Task
 
                     while (startTime + s.Elapsed <= endTime)
                     {
-                        var studentsEntry = studentService.GetStudentCheckTimesEntry(GlobalConfig.Date).Result;
-                        var studentsExit = studentService.GetStudentCheckTimesExit(GlobalConfig.Date).Result;
+                        var studentsEntry = studentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
+                        var studentsExit = studentService.GetStudentCheckTimesExit(GlobalConfig.Date);
                         RunStudentsCheckTime(studentsEntry.Item1, studentsExit.Item1, SentMethod.New);
 
                         #region sent message
@@ -166,8 +166,8 @@ namespace Rajinibon.Task
 
                         #region 1.ดึงข้อมูลนักเรียนที่ไม่เคยส่งข้อความในช่วงเวลานั้นๆ
                         // get all student
-                        var studentsCheckTimeEntry = studentService.GetStudentCheckTimesEntryMySql(GlobalConfig.Date).Result.ToList();
-                        var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).Result.ToList();
+                        var studentsCheckTimeEntry = studentService.GetStudentCheckTimesEntryMySql(GlobalConfig.Date).ToList();
+                        var studentsCheckTimeExit = studentService.GetStudentCheckTimesExitMySql(GlobalConfig.Date).ToList();
 
                         // get all student sent message
                         var studentsSentMessageEntry = studentService.GetStudentSentMessageEntry(GlobalConfig.CurrentDate).ToList();

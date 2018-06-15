@@ -27,11 +27,11 @@ namespace Rajinibon
             InitializeComponent();
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
             try
             {
-                await _StudentService.RemoveStudentsLess(GlobalConfig.Date.GetDate());
+                _StudentService.RemoveStudentsLess(GlobalConfig.Date.GetDate());
 
                 var timeStartConfig = GlobalConfig.AppSettings("taskStartTime").Split(':');
                 var timeEndConfig = GlobalConfig.AppSettings("taskEndTime").Split(':');
@@ -39,17 +39,17 @@ namespace Rajinibon
                 var startTime = new TimeSpan(int.Parse(timeStartConfig[0]), int.Parse(timeStartConfig[1]), int.Parse(timeStartConfig[2]));
                 var endTime = new TimeSpan(int.Parse(timeEndConfig[0]), int.Parse(timeEndConfig[1]), int.Parse(timeEndConfig[2]));
 
-                await SetUpTimer(startTime, endTime);
+                SetUpTimer(startTime, endTime);
             }
             catch (Exception ex)
             {
-                await _StudentService.SaveExceptionLog(ex);
+                _StudentService.SaveExceptionLog(ex);
             }
 
         }
 
         private System.Threading.Timer timer;
-        private async Task SetUpTimer(TimeSpan startTime, TimeSpan endTime)
+        private void SetUpTimer(TimeSpan startTime, TimeSpan endTime)
         {
             try
             {
@@ -81,7 +81,7 @@ namespace Rajinibon
             }
             catch (Exception ex)
             {
-                await _StudentService.SaveExceptionLog(ex);
+                _StudentService.SaveExceptionLog(ex);
             }
         }
 
@@ -89,8 +89,8 @@ namespace Rajinibon
         {
             try
             {
-                var studentsEntry = _StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date).Result;
-                var studentsExit = _StudentService.GetStudentCheckTimesExit(GlobalConfig.Date).Result;
+                var studentsEntry = _StudentService.GetStudentCheckTimesEntry(GlobalConfig.Date);
+                var studentsExit = _StudentService.GetStudentCheckTimesExit(GlobalConfig.Date);
                 //var diffEntry = _StudentService.GetStudentsEntryFromList(GlobalConfig.StudentCheckTimes).ToList().Count - _StudentService.GetStudentSentMessageEntryFromList(GlobalConfig.StudentSentMessages).ToList().Count;
                 //var diffExit = _StudentService.GetStudentsExitFromList(GlobalConfig.StudentCheckTimes).ToList().Count - _StudentService.GetStudentSentMessageExitFromList(GlobalConfig.StudentSentMessages).ToList().Count;
 
@@ -126,11 +126,11 @@ namespace Rajinibon
             }
         }
 
-        private async Task RunStudentsSentMessage()
+        private void RunStudentsSentMessage()
         {
 
-            var studentsEntryDbf = await _StudentService.GetStudentsEntryDbf(GlobalConfig.Date);
-            var studentsExitDbf = await _StudentService.GetStudentsExitDbf(GlobalConfig.Date);
+            var studentsEntryDbf = _StudentService.GetStudentsEntryDbf(GlobalConfig.Date);
+            var studentsExitDbf = _StudentService.GetStudentsExitDbf(GlobalConfig.Date);
 
             // students entry sent time
             if (studentsEntryDbf.ToList().Count > 0)
