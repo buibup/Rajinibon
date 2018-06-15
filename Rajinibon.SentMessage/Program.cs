@@ -33,6 +33,7 @@ namespace Rajinibon.SentMessage
         {
             try
             {
+                
                 DateTime current = DateTime.Now;
                 TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
                 if (timeToGo < TimeSpan.Zero)
@@ -41,13 +42,13 @@ namespace Rajinibon.SentMessage
                 }
                 timer = new System.Threading.Timer(x =>
                 {
+                    var currentTime = DateTime.Now.TimeOfDay;
                     Stopwatch s = new Stopwatch();
                     s.Start();
 
-                    while (startTime + s.Elapsed <= endTime)
+                    // startTime and currentTime <= endTime
+                    while (startTime <= endTime && currentTime <= endTime)
                     {
-                        double sentTimeEntry = 0;
-                        double sentTimeExit = 0;
 
                         /** Process sent student message
                          * 1. get all student check time 
@@ -78,19 +79,15 @@ namespace Rajinibon.SentMessage
                         {
                             // sent message entry
                             studentService.SentStudentsNotifyMessage(studentsForSentMsgEntry, SentType.Entry);
-                            sentTimeEntry = studentsForSentMsgEntry.Count * 2;
-                            Thread.Sleep(TimeSpan.FromSeconds(sentTimeEntry));
                         }
 
                         if (studentsForSentMsgExit.Count > 0)
                         {
                             // sent message exit
                             studentService.SentStudentsNotifyMessage(studentsForSentMsgEntry, SentType.Exit);
-                            sentTimeExit = studentsForSentMsgExit.Count * 2;
-                            Thread.Sleep(TimeSpan.FromSeconds(sentTimeExit));
                         }
 
-                        //.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
+                        Thread.Sleep(TimeSpan.FromSeconds(2));
                     }
                     s.Stop();
                     Environment.Exit(0);
@@ -98,7 +95,16 @@ namespace Rajinibon.SentMessage
             }
             catch (Exception ex)
             {
-                studentService.SaveExceptionLog(ex);
+                try
+                {
+                    studentService.SaveExceptionLog(ex);
+                }
+                catch (Exception exApp)
+                {
+                    // show exception on console
+                    Console.WriteLine(exApp.Message.ToString());
+                    Console.ReadLine();
+                }
             }
         }
     }

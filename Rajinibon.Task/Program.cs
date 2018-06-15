@@ -159,7 +159,7 @@ namespace Rajinibon.Task
 
                         /** Process sent student message
                          * 1. get all student check time 
-                         * 2. loop sent each student every 2 sec (count students * 2 then use for sleep thead)
+                         * 2. loop sent each student
                          * 3. check error students
                          * 4. sent error students
                         */
@@ -187,7 +187,7 @@ namespace Rajinibon.Task
                             // sent message entry
                             studentService.SentStudentsNotifyMessage(studentsForSentMsgEntry, SentType.Entry);
                             sentTimeEntry = studentsForSentMsgEntry.Count * 2;
-                            Thread.Sleep(TimeSpan.FromSeconds(sentTimeEntry));
+                            //Thread.Sleep(TimeSpan.FromSeconds(sentTimeEntry));
                         }
 
                         if (studentsForSentMsgExit.Count > 0)
@@ -195,10 +195,10 @@ namespace Rajinibon.Task
                             // sent message exit
                             studentService.SentStudentsNotifyMessage(studentsForSentMsgEntry, SentType.Exit);
                             sentTimeExit = studentsForSentMsgExit.Count * 2;
-                            Thread.Sleep(TimeSpan.FromSeconds(sentTimeExit));
+                            //Thread.Sleep(TimeSpan.FromSeconds(sentTimeExit));
                         }
 
-                        //.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
+                        Thread.Sleep(TimeSpan.FromSeconds(2));
                     }
                     s.Stop();
                     Environment.Exit(0);
