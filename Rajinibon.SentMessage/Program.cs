@@ -28,27 +28,16 @@ namespace Rajinibon.SentMessage
             RunSentMessage(startTime, endTime);
 
             Console.WriteLine($"Task sent message finish.");
-            Console.ReadLine();
+            Thread.Sleep(5000);
             Environment.Exit(0);
+            
         }
         //private static System.Threading.Timer timer;
         private static void RunSentMessage(TimeSpan startTime, TimeSpan endTime)
         {
-            //try
-            //{
-
-            //DateTime current = DateTime.Now;
-            //TimeSpan timeToGo = DateTime.Now.TimeOfDay - current.TimeOfDay;
-            //if (timeToGo < TimeSpan.Zero)
-            //{
-            //    return;//time already passed
-            //}
-            //timer = new System.Threading.Timer(x =>
-            //{
+            
             var currentTime = DateTime.Now.TimeOfDay;
-            //Stopwatch s = new Stopwatch();
-            //s.Start();
-
+    
             // startTime and currentTime <= endTime
             while (currentTime >= startTime && currentTime <= endTime)
             {
@@ -102,23 +91,6 @@ namespace Rajinibon.SentMessage
                 }
                 currentTime = DateTime.Now.TimeOfDay;
             }
-            //s.Stop();
-            //Environment.Exit(0);
-            //}, null, 0, Timeout.InfiniteTimeSpan);
-            //}
-            //catch (Exception ex)
-            //{
-            //    try
-            //    {
-            //        studentService.SaveExceptionLog(ex);
-            //    }
-            //    catch (Exception exApp)
-            //    {
-            //        // show exception on console
-            //        Console.WriteLine(exApp.Message.ToString());
-            //        Console.ReadLine();
-            //    }
-            //}
         }
     }
 }

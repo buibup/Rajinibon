@@ -502,13 +502,11 @@ namespace Rajinibon.Services
             //เวลาเลิกเรียน
             #endregion
 
-
-
             request.AddParameter("students", studentsReq);
             if (sentType == SentType.Entry)
             {
                 request.AddParameter("message",
-                $"ทดสอบ" + System.Environment.NewLine +
+                $"ทดสอบ {GlobalConfig.StudentCount}" + System.Environment.NewLine +
                 $"รหัสนักเรียน: {model.EmpId}" + System.Environment.NewLine +
                 $"ชื่อ: {model.EmpName}" + System.Environment.NewLine +
                 $"เวลาเข้าเรียน: {model.ChkTime}");
@@ -516,7 +514,7 @@ namespace Rajinibon.Services
             else if (sentType == SentType.Exit)
             {
                 request.AddParameter("message",
-                $"ทดสอบ" + System.Environment.NewLine +
+                $"ทดสอบ {GlobalConfig.StudentCount}" + System.Environment.NewLine +
                 $"รหัสนักเรียน: {model.EmpId}" + System.Environment.NewLine +
                 $"ชื่อ: {model.EmpName}" + System.Environment.NewLine +
                 $"เวลาเลิกเรียน: {model.ChkTime}");
@@ -534,6 +532,7 @@ namespace Rajinibon.Services
             //{
             if (result.success == "1")
             {
+                GlobalConfig.StudentCount += 1;
                 sentMessage = new StudentSentMessage()
                 {
                     EmpId = model.EmpId,

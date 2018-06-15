@@ -20,6 +20,8 @@ namespace Rajinibon
         public static List<StudentCheckTime> StudentCheckTimes { get; set; } = new List<StudentCheckTime>();
         public static List<StudentSentMessage> StudentSentMessages { get; set; } = new List<StudentSentMessage>();
 
+        public static int StudentCount { get; set; } = 1;
+
         public static string CnnString(string name)
         {
             return ConfigurationManager.ConnectionStrings[name].ConnectionString;
