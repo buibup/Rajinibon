@@ -43,12 +43,6 @@ namespace Rajinibon.SentMessage
             {
                 try
                 {
-                    /** Process sent student message
-                * 1. get all student check time 
-                * 2. loop sent each student every 2 sec (count students * 2 then use for sleep thead)
-                * 3. check error students
-                * 4. sent error students
-               */
 
                     #region 1.ดึงข้อมูลนักเรียนที่ไม่เคยส่งข้อความในช่วงเวลานั้นๆ
                     // get all student

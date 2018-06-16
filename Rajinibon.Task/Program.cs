@@ -29,7 +29,7 @@ namespace Rajinibon.Task
             var startTime = new TimeSpan(int.Parse(timeStartConfig[0]), int.Parse(timeStartConfig[1]), int.Parse(timeStartConfig[2])); 
             var endTime = new TimeSpan(int.Parse(timeEndConfig[0]), int.Parse(timeEndConfig[1]), int.Parse(timeEndConfig[2]));
 
-            Console.WriteLine($"Task save check time finish.");
+            Console.WriteLine($"Task save check time proccessing...");
 
             // save check time
             RunTask(startTime, endTime);

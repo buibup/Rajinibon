@@ -617,10 +617,10 @@ namespace Rajinibon.Services
                     var responseMsg = SentOnceNotifyMessage(item, sentType);
                     while (responseMsg.success != "1")
                     {
-                        Thread.Sleep(2000);
+                        Thread.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
                         responseMsg = SentOnceNotifyMessage(item, sentType);
                     }
-                    Thread.Sleep(2000);
+                    Thread.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
                 }
             }
             catch (Exception ex)
