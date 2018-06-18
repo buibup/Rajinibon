@@ -55,8 +55,7 @@ namespace Rajinibon.Task
                 catch (Exception ex)
                 {
                     // show exception on console
-                    Console.WriteLine(ex.Message.ToString());
-                    Console.ReadLine();
+                    Console.WriteLine($"{DateTime.Now}: {ex.Message.ToString()}");
                 }
 
                 currentTime = DateTime.Now.TimeOfDay;

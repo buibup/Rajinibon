@@ -80,8 +80,7 @@ namespace Rajinibon.SentMessage
                 catch (Exception exApp)
                 {
                     // show exception on console
-                    Console.WriteLine(exApp.Message.ToString());
-                    Console.ReadLine();
+                    Console.WriteLine($"{DateTime.Now}: {exApp.Message.ToString()}");
                 }
                 currentTime = DateTime.Now.TimeOfDay;
             }
