@@ -609,6 +609,7 @@ namespace Rajinibon.Services
             {
                 foreach (var item in models)
                 {
+                    var sentCount = 1;
                     if (MySqlDataConnection.SentSuccess(item.EmpId, sentType))
                     {
                         continue;
@@ -617,6 +618,11 @@ namespace Rajinibon.Services
                     var responseMsg = SentOnceNotifyMessage(item, sentType);
                     while (responseMsg.success != "1")
                     {
+                        sentCount += 1;
+                        if(sentCount > 10)
+                        {
+                            break;
+                        }
                         Thread.Sleep(TimeSpan.FromSeconds(double.Parse(GlobalConfig.AppSettings("ThreadSleepSentMessageSec"))));
                         responseMsg = SentOnceNotifyMessage(item, sentType);
                     }
