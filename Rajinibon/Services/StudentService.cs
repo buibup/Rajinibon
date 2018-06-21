@@ -475,15 +475,27 @@ namespace Rajinibon.Services
             }
 
             var studentsAddPara = GlobalConfig.AppSettings("students");
-            var roomsAddPara = GlobalConfig.AppSettings("rooms");
-            var messageAddPara = GlobalConfig.AppSettings("message");
-            var usernameAddPara = GlobalConfig.AppSettings("username");
+            //var roomsAddPara = GlobalConfig.AppSettings("rooms");
+            //var messageAddPara = GlobalConfig.AppSettings("message");
+            //var usernameAddPara = GlobalConfig.AppSettings("username");
+            //var appName = GlobalConfig.AppSettings("appName");
+
+            #region for test
+            var students = studentsAddPara.Split('|');
+            if (GlobalConfig.Index > students.Length - 1)
+            {
+                GlobalConfig.Index = 0;
+            }
+            var sentStd = students[GlobalConfig.Index];
+            var studentsReq = studentsAddPara == "" ? model.EmpId : sentStd;
+
+            GlobalConfig.Index += 1;
+            #endregion
 
             var url = GlobalConfig.AppSettings("sentMessageService")
             .Replace("{schoolCode}", GlobalConfig.AppSettings("schoolCode"))
-            .Replace("{roleCode}", GlobalConfig.AppSettings("roleCode"));
+            .Replace("{studentCode}", studentsReq);
 
-            var studentsReq = studentsAddPara == "999902" ? studentsAddPara : model.EmpId;
             var client = new RestClient(url);
             var request = new RestRequest(Method.POST);
             request.AddBody("content-type", "application/form-data");
@@ -506,7 +518,7 @@ namespace Rajinibon.Services
             if (sentType == SentType.Entry)
             {
                 request.AddParameter("message",
-                $"ทดสอบ {GlobalConfig.StudentCount}" + System.Environment.NewLine +
+                $"ส่งจากระบบ" + System.Environment.NewLine +
                 $"รหัสนักเรียน: {model.EmpId}" + System.Environment.NewLine +
                 $"ชื่อ: {model.EmpName}" + System.Environment.NewLine +
                 $"เวลาเข้าเรียน: {model.ChkTime}");
@@ -514,14 +526,14 @@ namespace Rajinibon.Services
             else if (sentType == SentType.Exit)
             {
                 request.AddParameter("message",
-                $"ทดสอบ {GlobalConfig.StudentCount}" + System.Environment.NewLine +
+                $"ส่งจากระบบ" + System.Environment.NewLine +
                 $"รหัสนักเรียน: {model.EmpId}" + System.Environment.NewLine +
                 $"ชื่อ: {model.EmpName}" + System.Environment.NewLine +
                 $"เวลาเลิกเรียน: {model.ChkTime}");
             }
 
-            request.AddParameter("rooms", roomsAddPara);
-            request.AddParameter("username", usernameAddPara);
+            //request.AddParameter("rooms", roomsAddPara);
+            //request.AddParameter("username", usernameAddPara);
 
             StudentSentMessage sentMessage = new StudentSentMessage();
 
@@ -619,7 +631,7 @@ namespace Rajinibon.Services
                     while (responseMsg.success != "1")
                     {
                         sentCount += 1;
-                        if(sentCount > 10)
+                        if (sentCount > 10)
                         {
                             break;
                         }

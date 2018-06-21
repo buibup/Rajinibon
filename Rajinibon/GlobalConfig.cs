@@ -21,6 +21,7 @@ namespace Rajinibon
         public static List<StudentSentMessage> StudentSentMessages { get; set; } = new List<StudentSentMessage>();
 
         public static int StudentCount { get; set; } = 1;
+        public static int Index { get; set; } = 0;
 
         public static string CnnString(string name)
         {
