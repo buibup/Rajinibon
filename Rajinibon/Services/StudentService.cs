@@ -105,7 +105,7 @@ namespace Rajinibon.Services
             foreach (var item in models)
             {
                 var chkTime = item.ChkTime;
-                var time = new TimeSpan(chkTime.Hour, chkTime.Minute, chkTime.Millisecond);
+                var time = new TimeSpan(chkTime.Hour, chkTime.Minute, chkTime.Millisecond > 60 ? 0 : chkTime.Millisecond);
 
                 if (time.IsBetween(timeStart, timeEnd))
                 {
