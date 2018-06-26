@@ -19,7 +19,10 @@ namespace Rajinibon.DataAccess
 
             if (File.Exists(fullPath))
             {
-                using (var table = Table.Open(fullPath))
+                // Protect Exception Another Process
+                var fs = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+                using (var table = Table.Open(fs))
                 {
                     var reader = table.OpenReader(Encoding.GetEncoding(874));
                     while (reader.Read())

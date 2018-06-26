@@ -56,6 +56,10 @@ namespace Rajinibon.Task
                 {
                     // show exception on console
                     Console.WriteLine($"{DateTime.Now}: {ex.Message.ToString()}");
+
+                    // close process when exception
+                    // Thread.Sleep(5000);
+                    // Environment.Exit(0);
                 }
 
                 currentTime = DateTime.Now.TimeOfDay;
