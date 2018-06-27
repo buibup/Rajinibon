@@ -71,7 +71,7 @@ namespace Rajinibon.SentMessage
                     if (studentsForSentMsgExit.Count > 0)
                     {
                         // sent message exit
-                        studentService.SentStudentsNotifyMessage(studentsForSentMsgEntry, SentType.Exit);
+                        studentService.SentStudentsNotifyMessage(studentsForSentMsgExit, SentType.Exit);
                     }
 
                     Thread.Sleep(TimeSpan.FromSeconds(2));

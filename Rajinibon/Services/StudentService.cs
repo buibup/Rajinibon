@@ -487,10 +487,10 @@ namespace Rajinibon.Services
                 GlobalConfig.Index = 0;
             }
             var sentStd = students[GlobalConfig.Index];
-            var studentsReq = studentsAddPara == "" ? model.EmpId : sentStd;
-
             GlobalConfig.Index += 1;
             #endregion
+
+            var studentsReq = studentsAddPara == "" ? model.EmpId : sentStd;
 
             var url = GlobalConfig.AppSettings("sentMessageService")
             .Replace("{schoolCode}", GlobalConfig.AppSettings("schoolCode"))
